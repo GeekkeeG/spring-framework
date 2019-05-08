@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,24 +16,23 @@
 
 package org.springframework.aop.aspectj.annotation;
 
-import static org.junit.Assert.*;
 import org.aspectj.lang.reflect.PerClauseKind;
 import org.junit.Test;
+import test.aop.PerTargetAspect;
 
 import org.springframework.aop.Pointcut;
 import org.springframework.aop.aspectj.annotation.AbstractAspectJAdvisorFactoryTests.ExceptionAspect;
 
-import test.aop.PerTargetAspect;
-
+import static org.junit.Assert.*;
 
 /**
  * @since 2.0
  * @author Rod Johnson
  * @author Chris Beams
  */
-public final class AspectMetadataTests {
+public class AspectMetadataTests {
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void testNotAnAspect() {
 		new AspectMetadata(String.class,"someBean");
 	}

@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,7 +23,6 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Properties;
-
 import javax.activation.FileTypeMap;
 import javax.mail.Address;
 import javax.mail.Message;
@@ -36,19 +35,30 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-import junit.framework.TestCase;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import org.springframework.mail.MailParseException;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.SimpleMailMessage;
+import org.springframework.util.ObjectUtils;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Juergen Hoeller
+ * @author Stephane Nicoll
  * @since 09.10.2004
  */
-public class JavaMailSenderTests extends TestCase {
+public class JavaMailSenderTests {
 
-	public void testJavaMailSenderWithSimpleMessage() throws MessagingException, IOException {
+	@Rule
+	public final ExpectedException thrown = ExpectedException.none();
+
+
+	@Test
+	public void javaMailSenderWithSimpleMessage() throws MessagingException, IOException {
 		MockJavaMailSender sender = new MockJavaMailSender();
 		sender.setHost("host");
 		sender.setPort(30);
@@ -59,8 +69,8 @@ public class JavaMailSenderTests extends TestCase {
 		simpleMessage.setFrom("me@mail.org");
 		simpleMessage.setReplyTo("reply@mail.org");
 		simpleMessage.setTo("you@mail.org");
-		simpleMessage.setCc(new String[] {"he@mail.org", "she@mail.org"});
-		simpleMessage.setBcc(new String[] {"us@mail.org", "them@mail.org"});
+		simpleMessage.setCc("he@mail.org", "she@mail.org");
+		simpleMessage.setBcc("us@mail.org", "them@mail.org");
 		Date sentDate = new GregorianCalendar(2004, 1, 1).getTime();
 		simpleMessage.setSentDate(sentDate);
 		simpleMessage.setSubject("my subject");
@@ -75,19 +85,19 @@ public class JavaMailSenderTests extends TestCase {
 
 		assertEquals(1, sender.transport.getSentMessages().size());
 		MimeMessage sentMessage = sender.transport.getSentMessage(0);
-		List froms = Arrays.asList(sentMessage.getFrom());
+		List<Address> froms = Arrays.asList(sentMessage.getFrom());
 		assertEquals(1, froms.size());
 		assertEquals("me@mail.org", ((InternetAddress) froms.get(0)).getAddress());
-		List replyTos = Arrays.asList(sentMessage.getReplyTo());
+		List<Address> replyTos = Arrays.asList(sentMessage.getReplyTo());
 		assertEquals("reply@mail.org", ((InternetAddress) replyTos.get(0)).getAddress());
-		List tos = Arrays.asList(sentMessage.getRecipients(Message.RecipientType.TO));
+		List<Address> tos = Arrays.asList(sentMessage.getRecipients(Message.RecipientType.TO));
 		assertEquals(1, tos.size());
 		assertEquals("you@mail.org", ((InternetAddress) tos.get(0)).getAddress());
-		List ccs = Arrays.asList(sentMessage.getRecipients(Message.RecipientType.CC));
+		List<Address> ccs = Arrays.asList(sentMessage.getRecipients(Message.RecipientType.CC));
 		assertEquals(2, ccs.size());
 		assertEquals("he@mail.org", ((InternetAddress) ccs.get(0)).getAddress());
 		assertEquals("she@mail.org", ((InternetAddress) ccs.get(1)).getAddress());
-		List bccs = Arrays.asList(sentMessage.getRecipients(Message.RecipientType.BCC));
+		List<Address> bccs = Arrays.asList(sentMessage.getRecipients(Message.RecipientType.BCC));
 		assertEquals(2, bccs.size());
 		assertEquals("us@mail.org", ((InternetAddress) bccs.get(0)).getAddress());
 		assertEquals("them@mail.org", ((InternetAddress) bccs.get(1)).getAddress());
@@ -96,7 +106,8 @@ public class JavaMailSenderTests extends TestCase {
 		assertEquals("my text", sentMessage.getContent());
 	}
 
-	public void testJavaMailSenderWithSimpleMessages() throws MessagingException, IOException {
+	@Test
+	public void javaMailSenderWithSimpleMessages() throws MessagingException {
 		MockJavaMailSender sender = new MockJavaMailSender();
 		sender.setHost("host");
 		sender.setUsername("username");
@@ -106,7 +117,7 @@ public class JavaMailSenderTests extends TestCase {
 		simpleMessage1.setTo("he@mail.org");
 		SimpleMailMessage simpleMessage2 = new SimpleMailMessage();
 		simpleMessage2.setTo("she@mail.org");
-		sender.send(new SimpleMailMessage[] {simpleMessage1, simpleMessage2});
+		sender.send(simpleMessage1, simpleMessage2);
 
 		assertEquals("host", sender.transport.getConnectedHost());
 		assertEquals("username", sender.transport.getConnectedUsername());
@@ -115,16 +126,17 @@ public class JavaMailSenderTests extends TestCase {
 
 		assertEquals(2, sender.transport.getSentMessages().size());
 		MimeMessage sentMessage1 = sender.transport.getSentMessage(0);
-		List tos1 = Arrays.asList(sentMessage1.getRecipients(Message.RecipientType.TO));
+		List<Address> tos1 = Arrays.asList(sentMessage1.getRecipients(Message.RecipientType.TO));
 		assertEquals(1, tos1.size());
 		assertEquals("he@mail.org", ((InternetAddress) tos1.get(0)).getAddress());
 		MimeMessage sentMessage2 = sender.transport.getSentMessage(1);
-		List tos2 = Arrays.asList(sentMessage2.getRecipients(Message.RecipientType.TO));
+		List<Address> tos2 = Arrays.asList(sentMessage2.getRecipients(Message.RecipientType.TO));
 		assertEquals(1, tos2.size());
 		assertEquals("she@mail.org", ((InternetAddress) tos2.get(0)).getAddress());
 	}
 
-	public void testJavaMailSenderWithMimeMessage() throws MessagingException {
+	@Test
+	public void javaMailSenderWithMimeMessage() throws MessagingException {
 		MockJavaMailSender sender = new MockJavaMailSender();
 		sender.setHost("host");
 		sender.setUsername("username");
@@ -142,7 +154,8 @@ public class JavaMailSenderTests extends TestCase {
 		assertEquals(mimeMessage, sender.transport.getSentMessage(0));
 	}
 
-	public void testJavaMailSenderWithMimeMessages() throws MessagingException {
+	@Test
+	public void javaMailSenderWithMimeMessages() throws MessagingException {
 		MockJavaMailSender sender = new MockJavaMailSender();
 		sender.setHost("host");
 		sender.setUsername("username");
@@ -152,7 +165,7 @@ public class JavaMailSenderTests extends TestCase {
 		mimeMessage1.setRecipient(Message.RecipientType.TO, new InternetAddress("he@mail.org"));
 		MimeMessage mimeMessage2 = sender.createMimeMessage();
 		mimeMessage2.setRecipient(Message.RecipientType.TO, new InternetAddress("she@mail.org"));
-		sender.send(new MimeMessage[] {mimeMessage1, mimeMessage2});
+		sender.send(mimeMessage1, mimeMessage2);
 
 		assertEquals("host", sender.transport.getConnectedHost());
 		assertEquals("username", sender.transport.getConnectedUsername());
@@ -163,13 +176,14 @@ public class JavaMailSenderTests extends TestCase {
 		assertEquals(mimeMessage2, sender.transport.getSentMessage(1));
 	}
 
-	public void testJavaMailSenderWithMimeMessagePreparator() {
+	@Test
+	public void javaMailSenderWithMimeMessagePreparator() {
 		MockJavaMailSender sender = new MockJavaMailSender();
 		sender.setHost("host");
 		sender.setUsername("username");
 		sender.setPassword("password");
 
-		final List<Message> messages = new ArrayList<Message>();
+		final List<Message> messages = new ArrayList<>();
 
 		MimeMessagePreparator preparator = new MimeMessagePreparator() {
 			@Override
@@ -188,13 +202,14 @@ public class JavaMailSenderTests extends TestCase {
 		assertEquals(messages.get(0), sender.transport.getSentMessage(0));
 	}
 
-	public void testJavaMailSenderWithMimeMessagePreparators() {
+	@Test
+	public void javaMailSenderWithMimeMessagePreparators() {
 		MockJavaMailSender sender = new MockJavaMailSender();
 		sender.setHost("host");
 		sender.setUsername("username");
 		sender.setPassword("password");
 
-		final List<Message> messages = new ArrayList<Message>();
+		final List<Message> messages = new ArrayList<>();
 
 		MimeMessagePreparator preparator1 = new MimeMessagePreparator() {
 			@Override
@@ -210,7 +225,7 @@ public class JavaMailSenderTests extends TestCase {
 				messages.add(mimeMessage);
 			}
 		};
-		sender.send(new MimeMessagePreparator[] {preparator1, preparator2});
+		sender.send(preparator1, preparator2);
 
 		assertEquals("host", sender.transport.getConnectedHost());
 		assertEquals("username", sender.transport.getConnectedUsername());
@@ -221,7 +236,8 @@ public class JavaMailSenderTests extends TestCase {
 		assertEquals(messages.get(1), sender.transport.getSentMessage(1));
 	}
 
-	public void testJavaMailSenderWithMimeMessageHelper() throws MessagingException {
+	@Test
+	public void javaMailSenderWithMimeMessageHelper() throws MessagingException {
 		MockJavaMailSender sender = new MockJavaMailSender();
 		sender.setHost("host");
 		sender.setUsername("username");
@@ -242,7 +258,8 @@ public class JavaMailSenderTests extends TestCase {
 		assertEquals(message.getMimeMessage(), sender.transport.getSentMessage(0));
 	}
 
-	public void testJavaMailSenderWithMimeMessageHelperAndSpecificEncoding() throws MessagingException {
+	@Test
+	public void javaMailSenderWithMimeMessageHelperAndSpecificEncoding() throws MessagingException {
 		MockJavaMailSender sender = new MockJavaMailSender();
 		sender.setHost("host");
 		sender.setUsername("username");
@@ -265,7 +282,8 @@ public class JavaMailSenderTests extends TestCase {
 		assertEquals(message.getMimeMessage(), sender.transport.getSentMessage(0));
 	}
 
-	public void testJavaMailSenderWithMimeMessageHelperAndDefaultEncoding() throws MessagingException {
+	@Test
+	public void javaMailSenderWithMimeMessageHelperAndDefaultEncoding() throws MessagingException {
 		MockJavaMailSender sender = new MockJavaMailSender();
 		sender.setHost("host");
 		sender.setUsername("username");
@@ -289,7 +307,8 @@ public class JavaMailSenderTests extends TestCase {
 		assertEquals(message.getMimeMessage(), sender.transport.getSentMessage(0));
 	}
 
-	public void testJavaMailSenderWithParseExceptionOnSimpleMessage() {
+	@Test
+	public void javaMailSenderWithParseExceptionOnSimpleMessage() {
 		MockJavaMailSender sender = new MockJavaMailSender();
 		SimpleMailMessage simpleMessage = new SimpleMailMessage();
 		simpleMessage.setFrom("");
@@ -302,7 +321,8 @@ public class JavaMailSenderTests extends TestCase {
 		}
 	}
 
-	public void testJavaMailSenderWithParseExceptionOnMimeMessagePreparator() {
+	@Test
+	public void javaMailSenderWithParseExceptionOnMimeMessagePreparator() {
 		MockJavaMailSender sender = new MockJavaMailSender();
 		MimeMessagePreparator preparator = new MimeMessagePreparator() {
 			@Override
@@ -319,7 +339,8 @@ public class JavaMailSenderTests extends TestCase {
 		}
 	}
 
-	public void testJavaMailSenderWithCustomSession() throws MessagingException {
+	@Test
+	public void javaMailSenderWithCustomSession() throws MessagingException {
 		final Session session = Session.getInstance(new Properties());
 		MockJavaMailSender sender = new MockJavaMailSender() {
 			@Override
@@ -347,7 +368,8 @@ public class JavaMailSenderTests extends TestCase {
 		assertEquals(mimeMessage, sender.transport.getSentMessage(0));
 	}
 
-	public void testJavaMailProperties() throws MessagingException {
+	@Test
+	public void javaMailProperties() throws MessagingException {
 		Properties props = new Properties();
 		props.setProperty("bogusKey", "bogusValue");
 		MockJavaMailSender sender = new MockJavaMailSender() {
@@ -374,7 +396,8 @@ public class JavaMailSenderTests extends TestCase {
 		assertEquals(mimeMessage, sender.transport.getSentMessage(0));
 	}
 
-	public void testFailedMailServerConnect() throws Exception {
+	@Test
+	public void failedMailServerConnect() {
 		MockJavaMailSender sender = new MockJavaMailSender();
 		sender.setHost(null);
 		sender.setUsername("username");
@@ -394,7 +417,8 @@ public class JavaMailSenderTests extends TestCase {
 		}
 	}
 
-	public void testFailedMailServerClose() throws Exception {
+	@Test
+	public void failedMailServerClose() {
 		MockJavaMailSender sender = new MockJavaMailSender();
 		sender.setHost("");
 		sender.setUsername("username");
@@ -412,7 +436,8 @@ public class JavaMailSenderTests extends TestCase {
 		}
 	}
 
-	public void testFailedSimpleMessage() throws Exception {
+	@Test
+	public void failedSimpleMessage() throws MessagingException {
 		MockJavaMailSender sender = new MockJavaMailSender();
 		sender.setHost("host");
 		sender.setUsername("username");
@@ -425,7 +450,7 @@ public class JavaMailSenderTests extends TestCase {
 		simpleMessage2.setTo("she@mail.org");
 
 		try {
-			sender.send(new SimpleMailMessage[] {simpleMessage1, simpleMessage2});
+			sender.send(simpleMessage1, simpleMessage2);
 		}
 		catch (MailSendException ex) {
 			ex.printStackTrace();
@@ -443,7 +468,8 @@ public class JavaMailSenderTests extends TestCase {
 		}
 	}
 
-	public void testFailedMimeMessage() throws Exception {
+	@Test
+	public void failedMimeMessage() throws MessagingException {
 		MockJavaMailSender sender = new MockJavaMailSender();
 		sender.setHost("host");
 		sender.setUsername("username");
@@ -456,7 +482,7 @@ public class JavaMailSenderTests extends TestCase {
 		mimeMessage2.setRecipient(Message.RecipientType.TO, new InternetAddress("she@mail.org"));
 
 		try {
-			sender.send(new MimeMessage[] {mimeMessage1, mimeMessage2});
+			sender.send(mimeMessage1, mimeMessage2);
 		}
 		catch (MailSendException ex) {
 			ex.printStackTrace();
@@ -472,6 +498,22 @@ public class JavaMailSenderTests extends TestCase {
 			assertTrue(subEx instanceof MessagingException);
 			assertEquals("failed", ((MessagingException) subEx).getMessage());
 		}
+	}
+
+	@Test
+	public void testConnection() throws MessagingException {
+		MockJavaMailSender sender = new MockJavaMailSender();
+		sender.setHost("host");
+		sender.testConnection();
+	}
+
+	@Test
+	public void testConnectionWithFailure() throws MessagingException {
+		MockJavaMailSender sender = new MockJavaMailSender();
+		sender.setHost(null);
+
+		thrown.expect(MessagingException.class);
+		sender.testConnection();
 	}
 
 
@@ -494,7 +536,7 @@ public class JavaMailSenderTests extends TestCase {
 		private String connectedUsername = null;
 		private String connectedPassword = null;
 		private boolean closeCalled = false;
-		private List<Message> sentMessages = new ArrayList<Message>();
+		private List<Message> sentMessages = new ArrayList<>();
 
 		private MockTransport(Session session, URLName urlName) {
 			super(session, urlName);
@@ -520,7 +562,7 @@ public class JavaMailSenderTests extends TestCase {
 			return closeCalled;
 		}
 
-		public List getSentMessages() {
+		public List<Message> getSentMessages() {
 			return sentMessages;
 		}
 
@@ -537,6 +579,7 @@ public class JavaMailSenderTests extends TestCase {
 			this.connectedPort = port;
 			this.connectedUsername = username;
 			this.connectedPassword = password;
+			setConnected(true);
 		}
 
 		@Override
@@ -552,9 +595,8 @@ public class JavaMailSenderTests extends TestCase {
 			if ("fail".equals(message.getSubject())) {
 				throw new MessagingException("failed");
 			}
-			List addr1 = Arrays.asList(message.getAllRecipients());
-			List addr2 = Arrays.asList(addresses);
-			if (!addr1.equals(addr2)) {
+			if (addresses == null || (message.getAllRecipients() == null ? addresses.length > 0 :
+					!ObjectUtils.nullSafeEquals(addresses, message.getAllRecipients()))) {
 				throw new MessagingException("addresses not correct");
 			}
 			if (message.getSentDate() == null) {

@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2002-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,32 +22,57 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.springframework.messaging.Message;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
-
+import org.springframework.core.annotation.AliasFor;
 
 /**
- * Annotation that can be used on methods processing an input message to indicate that the
- * method's return value should be converted to a {@link Message} and sent to the
- * specified destination with the prefix <code>"/user/{username}"</code> automatically
- * prepended with the user information expected to be the input message header
- * {@link SimpMessageHeaderAccessor#USER_HEADER}. Such user destinations may need to be
- * further resolved to actual destinations.
+ * Indicates the return value of a message-handling method should be sent as a
+ * {@link org.springframework.messaging.Message} to the specified destination(s)
+ * further prepended with <code>"/user/{username}"</code> where the user name
+ * is extracted from the headers of the input message being handled.
  *
+ * <p>Both {@code @SendTo} and {@code @SendToUser} may be used on the same method
+ * in which case a message is sent to the destinations of both annotations.
+ *
+ * <p>This annotation may be placed class-level in which case it is inherited
+ * by methods of the class. At the same time, method-level {@code @SendTo} or
+ * {@code @SendToUser} annotations override any such at the class level.
+
  * @author Rossen Stoyanchev
+ * @author Sam Brannen
  * @since 4.0
- *
- * @see org.springframework.messaging.handler.annotation.SendTo
- * @see org.springframework.messaging.simp.handler.UserDestinationMessageHandler
+ * @see org.springframework.messaging.simp.annotation.support.SendToMethodReturnValueHandler
+ * @see org.springframework.messaging.simp.user.UserDestinationMessageHandler
+ * @see org.springframework.messaging.simp.SimpMessageHeaderAccessor#getUser()
  */
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface SendToUser {
 
 	/**
-	 * The destination for a message based on the return value of a method.
+	 * Alias for {@link #destinations}.
+	 * @see #destinations
 	 */
+	@AliasFor("destinations")
 	String[] value() default {};
+
+	/**
+	 * One or more destinations to send a message to.
+	 * <p>If left unspecified, a default destination is selected based on the
+	 * destination of the input message being handled.
+	 * @since 4.2
+	 * @see #value
+	 * @see org.springframework.messaging.simp.annotation.support.SendToMethodReturnValueHandler
+	 */
+	@AliasFor("value")
+	String[] destinations() default {};
+
+	/**
+	 * Whether messages should be sent to all sessions associated with the user
+	 * or only to the session of the input message being handled.
+	 * <p>By default, this is set to {@code true} in which case messages are
+	 * broadcast to all sessions.
+	 */
+	boolean broadcast() default true;
 
 }

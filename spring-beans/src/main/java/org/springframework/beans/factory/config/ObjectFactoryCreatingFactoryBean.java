@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,6 +21,7 @@ import java.io.Serializable;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -94,8 +95,9 @@ import org.springframework.util.Assert;
  * @see org.springframework.beans.factory.ObjectFactory
  * @see ServiceLocatorFactoryBean
  */
-public class ObjectFactoryCreatingFactoryBean extends AbstractFactoryBean<ObjectFactory> {
+public class ObjectFactoryCreatingFactoryBean extends AbstractFactoryBean<ObjectFactory<Object>> {
 
+	@Nullable
 	private String targetBeanName;
 
 
@@ -118,13 +120,16 @@ public class ObjectFactoryCreatingFactoryBean extends AbstractFactoryBean<Object
 
 
 	@Override
-	public Class getObjectType() {
+	public Class<?> getObjectType() {
 		return ObjectFactory.class;
 	}
 
 	@Override
-	protected ObjectFactory createInstance() {
-		return new TargetBeanObjectFactory(getBeanFactory(), this.targetBeanName);
+	protected ObjectFactory<Object> createInstance() {
+		BeanFactory beanFactory = getBeanFactory();
+		Assert.state(beanFactory != null, "No BeanFactory available");
+		Assert.state(this.targetBeanName != null, "No target bean name specified");
+		return new TargetBeanObjectFactory(beanFactory, this.targetBeanName);
 	}
 
 
@@ -132,7 +137,7 @@ public class ObjectFactoryCreatingFactoryBean extends AbstractFactoryBean<Object
 	 * Independent inner class - for serialization purposes.
 	 */
 	@SuppressWarnings("serial")
-	private static class TargetBeanObjectFactory implements ObjectFactory, Serializable {
+	private static class TargetBeanObjectFactory implements ObjectFactory<Object>, Serializable {
 
 		private final BeanFactory beanFactory;
 

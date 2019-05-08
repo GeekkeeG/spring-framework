@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,9 +18,10 @@ package org.springframework.web.socket.client;
 
 import java.net.URI;
 
-import org.springframework.http.HttpHeaders;
+import org.springframework.lang.Nullable;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.socket.WebSocketHandler;
+import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.WebSocketSession;
 
 /**
@@ -30,7 +31,6 @@ import org.springframework.web.socket.WebSocketSession;
  *
  * @author Rossen Stoyanchev
  * @since 4.0
- *
  * @see WebSocketConnectionManager
  */
 public interface WebSocketClient {
@@ -38,6 +38,7 @@ public interface WebSocketClient {
 	ListenableFuture<WebSocketSession> doHandshake(WebSocketHandler webSocketHandler,
 			String uriTemplate, Object... uriVariables);
 
-	ListenableFuture<WebSocketSession> doHandshake(WebSocketHandler webSocketHandler, HttpHeaders headers, URI uri);
+	ListenableFuture<WebSocketSession> doHandshake(WebSocketHandler webSocketHandler,
+			@Nullable WebSocketHttpHeaders headers, URI uri);
 
 }

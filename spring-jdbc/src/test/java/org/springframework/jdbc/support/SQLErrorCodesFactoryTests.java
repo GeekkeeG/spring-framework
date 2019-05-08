@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2002-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,14 +20,15 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Arrays;
-
 import javax.sql.DataSource;
 
 import org.junit.Test;
+
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
 import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.*;
 
@@ -36,6 +37,7 @@ import static org.mockito.BDDMockito.*;
  *
  * @author Rod Johnson
  * @author Thomas Risberg
+ * @author Stephane Nicoll
  */
 public class SQLErrorCodesFactoryTests {
 
@@ -118,6 +120,22 @@ public class SQLErrorCodesFactoryTests {
 		assertFalse(Arrays.binarySearch(sec.getBadSqlGrammarCodes(), "942") >= 0);
 		// This had better NOT be
 		assertTrue(Arrays.binarySearch(sec.getBadSqlGrammarCodes(), "-204") >= 0);
+	}
+
+	private void assertIsHana(SQLErrorCodes sec) {
+		assertTrue(sec.getBadSqlGrammarCodes().length > 0);
+		assertTrue(sec.getDataIntegrityViolationCodes().length > 0);
+
+		assertTrue(Arrays.binarySearch(sec.getBadSqlGrammarCodes(), "368") >= 0);
+		assertTrue(Arrays.binarySearch(sec.getPermissionDeniedCodes(), "10") >= 0);
+		assertTrue(Arrays.binarySearch(sec.getDuplicateKeyCodes(), "301") >= 0);
+		assertTrue(Arrays.binarySearch(sec.getDataIntegrityViolationCodes(), "461") >= 0);
+		assertTrue(Arrays.binarySearch(sec.getDataAccessResourceFailureCodes(), "-813") >=0);
+		assertTrue(Arrays.binarySearch(sec.getInvalidResultSetAccessCodes(), "582") >=0);
+		assertTrue(Arrays.binarySearch(sec.getCannotAcquireLockCodes(), "131") >= 0);
+		assertTrue(Arrays.binarySearch(sec.getCannotSerializeTransactionCodes(), "138") >= 0);
+		assertTrue(Arrays.binarySearch(sec.getDeadlockLoserCodes(), "133") >= 0);
+
 	}
 
 	@Test
@@ -295,6 +313,12 @@ public class SQLErrorCodesFactoryTests {
 		assertIsDB2(sec);
 		sec = getErrorCodesFromDataSource("DB-2", null);
 		assertIsEmpty(sec);
+	}
+
+	@Test
+	public void testHanaIsRecognizedFromMetadata() throws Exception {
+		SQLErrorCodes sec = getErrorCodesFromDataSource("SAP DB", null);
+		assertIsHana(sec);
 	}
 
 	/**

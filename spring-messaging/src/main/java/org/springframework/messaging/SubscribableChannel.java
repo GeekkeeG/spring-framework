@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,11 +16,9 @@
 
 package org.springframework.messaging;
 
-
 /**
- * Interface for any MessageChannel implementation that accepts subscribers.
- * The subscribers must implement the {@link MessageHandler} interface and
- * will be invoked when a Message is available.
+ * A {@link MessageChannel} that maintains a registry of subscribers and invokes
+ * them to handle messages sent through this channel.
  *
  * @author Mark Fisher
  * @since 4.0
@@ -28,16 +26,16 @@ package org.springframework.messaging;
 public interface SubscribableChannel extends MessageChannel {
 
 	/**
-	 * Register a {@link MessageHandler} as a subscriber to this channel.
-	 * @return {@code true} if the channel was not already subscribed to the specified
-	 *         handler
+	 * Register a message handler.
+	 * @return {@code true} if the handler was subscribed or {@code false} if it
+	 * was already subscribed.
 	 */
 	boolean subscribe(MessageHandler handler);
 
 	/**
-	 * Remove a {@link MessageHandler} from the subscribers of this channel.
-	 * @return {@code true} if the channel was previously subscribed to the specified
-	 *         handler
+	 * Un-register a message handler.
+	 * @return {@code true} if the handler was un-registered, or {@code false}
+	 * if was not registered.
 	 */
 	boolean unsubscribe(MessageHandler handler);
 

@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,6 +21,7 @@ import javax.inject.Provider;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -39,8 +40,9 @@ import org.springframework.util.Assert;
  * @see javax.inject.Provider
  * @see ObjectFactoryCreatingFactoryBean
  */
-public class ProviderCreatingFactoryBean extends AbstractFactoryBean<Provider> {
+public class ProviderCreatingFactoryBean extends AbstractFactoryBean<Provider<Object>> {
 
+	@Nullable
 	private String targetBeanName;
 
 
@@ -63,13 +65,16 @@ public class ProviderCreatingFactoryBean extends AbstractFactoryBean<Provider> {
 
 
 	@Override
-	public Class getObjectType() {
+	public Class<?> getObjectType() {
 		return Provider.class;
 	}
 
 	@Override
-	protected Provider createInstance() {
-		return new TargetBeanProvider(getBeanFactory(), this.targetBeanName);
+	protected Provider<Object> createInstance() {
+		BeanFactory beanFactory = getBeanFactory();
+		Assert.state(beanFactory != null, "No BeanFactory available");
+		Assert.state(this.targetBeanName != null, "No target bean name specified");
+		return new TargetBeanProvider(beanFactory, this.targetBeanName);
 	}
 
 
@@ -77,7 +82,7 @@ public class ProviderCreatingFactoryBean extends AbstractFactoryBean<Provider> {
 	 * Independent inner class - for serialization purposes.
 	 */
 	@SuppressWarnings("serial")
-	private static class TargetBeanProvider implements Provider, Serializable {
+	private static class TargetBeanProvider implements Provider<Object>, Serializable {
 
 		private final BeanFactory beanFactory;
 

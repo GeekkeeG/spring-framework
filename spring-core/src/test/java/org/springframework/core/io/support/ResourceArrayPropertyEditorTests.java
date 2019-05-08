@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,11 +18,12 @@ package org.springframework.core.io.support;
 
 import java.beans.PropertyEditor;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
 
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.Resource;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Dave Syer
@@ -66,7 +67,7 @@ public class ResourceArrayPropertyEditorTests {
 		}
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void testStrictSystemPropertyReplacement() {
 		PropertyEditor editor = new ResourceArrayPropertyEditor(
 				new PathMatchingResourcePatternResolver(), new StandardEnvironment(),

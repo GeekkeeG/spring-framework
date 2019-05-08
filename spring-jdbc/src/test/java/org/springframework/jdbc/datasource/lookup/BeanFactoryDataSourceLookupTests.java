@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,6 +19,7 @@ package org.springframework.jdbc.datasource.lookup;
 import javax.sql.DataSource;
 
 import org.junit.Test;
+
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanNotOfRequiredTypeException;
 
@@ -62,10 +63,11 @@ public class BeanFactoryDataSourceLookupTests {
 				BeanFactoryDataSourceLookup lookup = new BeanFactoryDataSourceLookup(beanFactory);
 				lookup.getDataSource(DATASOURCE_BEAN_NAME);
 				fail("should have thrown DataSourceLookupFailureException");
-		} catch (DataSourceLookupFailureException ex) { /* expected */ }
+		}
+		catch (DataSourceLookupFailureException ex) { /* expected */ }
 	}
 
-	@Test(expected=IllegalStateException.class)
+	@Test(expected = IllegalStateException.class)
 	public void testLookupWhereBeanFactoryHasNotBeenSupplied() throws Exception {
 		BeanFactoryDataSourceLookup lookup = new BeanFactoryDataSourceLookup();
 		lookup.getDataSource(DATASOURCE_BEAN_NAME);

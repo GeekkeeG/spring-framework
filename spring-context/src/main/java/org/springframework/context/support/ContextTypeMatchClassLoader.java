@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,12 +17,13 @@
 package org.springframework.context.support;
 
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.core.DecoratingClassLoader;
 import org.springframework.core.OverridingClassLoader;
 import org.springframework.core.SmartClassLoader;
+import org.springframework.lang.Nullable;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -38,11 +39,16 @@ import org.springframework.util.ReflectionUtils;
  */
 class ContextTypeMatchClassLoader extends DecoratingClassLoader implements SmartClassLoader {
 
+	static {
+		ClassLoader.registerAsParallelCapable();
+	}
+
+
 	private static Method findLoadedClassMethod;
 
 	static {
 		try {
-			findLoadedClassMethod = ClassLoader.class.getDeclaredMethod("findLoadedClass", new Class[] {String.class});
+			findLoadedClassMethod = ClassLoader.class.getDeclaredMethod("findLoadedClass", String.class);
 		}
 		catch (NoSuchMethodException ex) {
 			throw new IllegalStateException("Invalid [java.lang.ClassLoader] class: no 'findLoadedClass' method defined!");
@@ -50,21 +56,21 @@ class ContextTypeMatchClassLoader extends DecoratingClassLoader implements Smart
 	}
 
 
-	/** Cache for byte array per class name */
-	private final Map<String, byte[]> bytesCache = new HashMap<String, byte[]>();
+	/** Cache for byte array per class name. */
+	private final Map<String, byte[]> bytesCache = new ConcurrentHashMap<>(256);
 
 
-	public ContextTypeMatchClassLoader(ClassLoader parent) {
+	public ContextTypeMatchClassLoader(@Nullable ClassLoader parent) {
 		super(parent);
 	}
 
 	@Override
-	public Class loadClass(String name) throws ClassNotFoundException {
+	public Class<?> loadClass(String name) throws ClassNotFoundException {
 		return new ContextOverridingClassLoader(getParent()).loadClass(name);
 	}
 
 	@Override
-	public boolean isClassReloadable(Class clazz) {
+	public boolean isClassReloadable(Class<?> clazz) {
 		return (clazz.getClassLoader() instanceof ContextOverridingClassLoader);
 	}
 
@@ -96,7 +102,7 @@ class ContextTypeMatchClassLoader extends DecoratingClassLoader implements Smart
 		}
 
 		@Override
-		protected Class loadClassForOverriding(String name) throws ClassNotFoundException {
+		protected Class<?> loadClassForOverriding(String name) throws ClassNotFoundException {
 			byte[] bytes = bytesCache.get(name);
 			if (bytes == null) {
 				bytes = loadBytesForClass(name);

@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,7 +17,9 @@
 package org.springframework.beans.propertyeditors;
 
 import java.beans.PropertyEditorSupport;
+import java.util.StringJoiner;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -36,6 +38,7 @@ import org.springframework.util.StringUtils;
  */
 public class ClassArrayEditor extends PropertyEditorSupport {
 
+	@Nullable
 	private final ClassLoader classLoader;
 
 
@@ -53,7 +56,7 @@ public class ClassArrayEditor extends PropertyEditorSupport {
 	 * @param classLoader the {@code ClassLoader} to use
 	 * (or pass {@code null} for the thread context {@code ClassLoader})
 	 */
-	public ClassArrayEditor(ClassLoader classLoader) {
+	public ClassArrayEditor(@Nullable ClassLoader classLoader) {
 		this.classLoader = (classLoader != null ? classLoader : ClassUtils.getDefaultClassLoader());
 	}
 
@@ -62,7 +65,7 @@ public class ClassArrayEditor extends PropertyEditorSupport {
 	public void setAsText(String text) throws IllegalArgumentException {
 		if (StringUtils.hasText(text)) {
 			String[] classNames = StringUtils.commaDelimitedListToStringArray(text);
-			Class[] classes = new Class[classNames.length];
+			Class<?>[] classes = new Class<?>[classNames.length];
 			for (int i = 0; i < classNames.length; i++) {
 				String className = classNames[i].trim();
 				classes[i] = ClassUtils.resolveClassName(className, this.classLoader);
@@ -76,18 +79,15 @@ public class ClassArrayEditor extends PropertyEditorSupport {
 
 	@Override
 	public String getAsText() {
-		Class[] classes = (Class[]) getValue();
+		Class<?>[] classes = (Class[]) getValue();
 		if (ObjectUtils.isEmpty(classes)) {
 			return "";
 		}
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < classes.length; ++i) {
-			if (i > 0) {
-				sb.append(",");
-			}
-			sb.append(ClassUtils.getQualifiedName(classes[i]));
+		StringJoiner sj = new StringJoiner(",");
+		for (Class<?> klass : classes) {
+			sj.add(ClassUtils.getQualifiedName(klass));
 		}
-		return sb.toString();
+		return sj.toString();
 	}
 
 }

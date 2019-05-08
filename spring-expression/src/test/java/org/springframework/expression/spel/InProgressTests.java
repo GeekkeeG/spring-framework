@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,13 +16,14 @@
 
 package org.springframework.expression.spel;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.junit.Test;
+
 import org.springframework.expression.spel.standard.SpelExpression;
+
+import static org.junit.Assert.*;
 
 /**
  * These are tests for language features that are not yet considered 'live'. Either missing implementation or
@@ -32,7 +33,7 @@ import org.springframework.expression.spel.standard.SpelExpression;
  *
  * @author Andy Clement
  */
-public class InProgressTests extends ExpressionTestCase {
+public class InProgressTests extends AbstractExpressionTests {
 
 	@Test
 	public void testRelOperatorsBetween01() {

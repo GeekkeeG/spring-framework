@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,8 +26,8 @@ import org.springframework.transaction.interceptor.TransactionAttributeSource;
 import org.springframework.transaction.interceptor.TransactionInterceptor;
 
 /**
- * {@code @Configuration} class that registers the Spring infrastructure beans necessary
- * to enable proxy-based annotation-driven transaction management.
+ * {@code @Configuration} class that registers the Spring infrastructure beans
+ * necessary to enable proxy-based annotation-driven transaction management.
  *
  * @author Chris Beams
  * @since 3.1
@@ -37,14 +37,15 @@ import org.springframework.transaction.interceptor.TransactionInterceptor;
 @Configuration
 public class ProxyTransactionManagementConfiguration extends AbstractTransactionManagementConfiguration {
 
-	@Bean(name=TransactionManagementConfigUtils.TRANSACTION_ADVISOR_BEAN_NAME)
+	@Bean(name = TransactionManagementConfigUtils.TRANSACTION_ADVISOR_BEAN_NAME)
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public BeanFactoryTransactionAttributeSourceAdvisor transactionAdvisor() {
-		BeanFactoryTransactionAttributeSourceAdvisor advisor =
-			new BeanFactoryTransactionAttributeSourceAdvisor();
+		BeanFactoryTransactionAttributeSourceAdvisor advisor = new BeanFactoryTransactionAttributeSourceAdvisor();
 		advisor.setTransactionAttributeSource(transactionAttributeSource());
 		advisor.setAdvice(transactionInterceptor());
-		advisor.setOrder(this.enableTx.<Integer>getNumber("order"));
+		if (this.enableTx != null) {
+			advisor.setOrder(this.enableTx.<Integer>getNumber("order"));
+		}
 		return advisor;
 	}
 

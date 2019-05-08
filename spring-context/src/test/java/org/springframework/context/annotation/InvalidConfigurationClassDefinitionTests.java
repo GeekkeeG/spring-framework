@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,16 +15,14 @@
  */
 package org.springframework.context.annotation;
 
-import static org.junit.Assert.*;
-import static org.springframework.beans.factory.support.BeanDefinitionBuilder.*;
-
 import org.junit.Test;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.parsing.BeanDefinitionParsingException;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ConfigurationClassPostProcessor;
 
+import static org.junit.Assert.*;
+import static org.springframework.beans.factory.support.BeanDefinitionBuilder.*;
 
 /**
  * Unit tests covering cases where a user defines an invalid Configuration

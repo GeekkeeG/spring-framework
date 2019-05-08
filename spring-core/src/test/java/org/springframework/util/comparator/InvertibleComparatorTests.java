@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,33 +30,32 @@ import static org.junit.Assert.*;
  * @author Chris Beams
  * @author Phillip Webb
  */
-
+@Deprecated
 public class InvertibleComparatorTests {
 
-	private Comparator<Integer> comparator = new ComparableComparator<Integer>();
+	private final Comparator<Integer> comparator = new ComparableComparator<>();
 
-	@Test(expected=IllegalArgumentException.class)
+
+	@Test(expected = IllegalArgumentException.class)
 	public void shouldNeedComparator() throws Exception {
-		new InvertibleComparator<Object>(null);
+		new InvertibleComparator<>(null);
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void shouldNeedComparatorWithAscending() throws Exception {
-		new InvertibleComparator<Object>(null, true);
+		new InvertibleComparator<>(null, true);
 	}
 
 	@Test
 	public void shouldDefaultToAscending() throws Exception {
-		InvertibleComparator<Integer> invertibleComparator =
-				new InvertibleComparator<Integer>(comparator);
+		InvertibleComparator<Integer> invertibleComparator = new InvertibleComparator<>(comparator);
 		assertThat(invertibleComparator.isAscending(), is(true));
 		assertThat(invertibleComparator.compare(1, 2), is(-1));
 	}
 
 	@Test
 	public void shouldInvert() throws Exception {
-		InvertibleComparator<Integer> invertibleComparator =
-				new InvertibleComparator<Integer>(comparator);
+		InvertibleComparator<Integer> invertibleComparator = new InvertibleComparator<>(comparator);
 		assertThat(invertibleComparator.isAscending(), is(true));
 		assertThat(invertibleComparator.compare(1, 2), is(-1));
 		invertibleComparator.invertOrder();
@@ -66,15 +65,13 @@ public class InvertibleComparatorTests {
 
 	@Test
 	public void shouldCompareAscending() throws Exception {
-		InvertibleComparator<Integer> invertibleComparator =
-				new InvertibleComparator<Integer>(comparator, true);
+		InvertibleComparator<Integer> invertibleComparator = new InvertibleComparator<>(comparator, true);
 		assertThat(invertibleComparator.compare(1, 2), is(-1));
 	}
 
 	@Test
 	public void shouldCompareDescending() throws Exception {
-		InvertibleComparator<Integer> invertibleComparator =
-				new InvertibleComparator<Integer>(comparator, false);
+		InvertibleComparator<Integer> invertibleComparator = new InvertibleComparator<>(comparator, false);
 		assertThat(invertibleComparator.compare(1, 2), is(1));
 	}
 

@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2002-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,18 +18,19 @@ package org.springframework.scheduling.quartz;
 
 import java.util.Map;
 
+import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
+import org.quartz.impl.JobDetailImpl;
 
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 
 /**
  * A Spring {@link FactoryBean} for creating a Quartz {@link org.quartz.JobDetail}
@@ -38,9 +39,6 @@ import org.springframework.context.ApplicationContextAware;
  * <p>{@code JobDetail(Impl)} itself is already a JavaBean but lacks
  * sensible defaults. This class uses the Spring bean name as job name,
  * and the Quartz default group ("DEFAULT") as job group if not specified.
- *
- * <p><b>NOTE:</b> This FactoryBean works against both Quartz 1.x and Quartz 2.x,
- * in contrast to the older {@link JobDetailBean} class.
  *
  * @author Juergen Hoeller
  * @since 3.1
@@ -52,11 +50,14 @@ import org.springframework.context.ApplicationContextAware;
 public class JobDetailFactoryBean
 		implements FactoryBean<JobDetail>, BeanNameAware, ApplicationContextAware, InitializingBean {
 
+	@Nullable
 	private String name;
 
+	@Nullable
 	private String group;
 
-	private Class jobClass;
+	@Nullable
+	private Class<? extends Job> jobClass;
 
 	private JobDataMap jobDataMap = new JobDataMap();
 
@@ -64,14 +65,19 @@ public class JobDetailFactoryBean
 
 	private boolean requestsRecovery = false;
 
+	@Nullable
 	private String description;
 
+	@Nullable
 	private String beanName;
 
+	@Nullable
 	private ApplicationContext applicationContext;
 
+	@Nullable
 	private String applicationContextJobDataKey;
 
+	@Nullable
 	private JobDetail jobDetail;
 
 
@@ -92,7 +98,7 @@ public class JobDetailFactoryBean
 	/**
 	 * Specify the job's implementation class.
 	 */
-	public void setJobClass(Class jobClass) {
+	public void setJobClass(Class<? extends Job> jobClass) {
 		this.jobClass = jobClass;
 	}
 
@@ -118,7 +124,7 @@ public class JobDetailFactoryBean
 	 * <p>Note: When using persistent Jobs whose JobDetail will be kept in the
 	 * database, do not put Spring-managed beans or an ApplicationContext
 	 * reference into the JobDataMap but rather into the SchedulerContext.
-	 * @param jobDataAsMap Map with String keys and any objects as values
+	 * @param jobDataAsMap a Map with String keys and any objects as values
 	 * (for example Spring-managed beans)
 	 * @see org.springframework.scheduling.quartz.SchedulerFactoryBean#setSchedulerContextAsMap
 	 */
@@ -182,6 +188,8 @@ public class JobDetailFactoryBean
 
 	@Override
 	public void afterPropertiesSet() {
+		Assert.notNull(this.jobClass, "Property 'jobClass' is required");
+
 		if (this.name == null) {
 			this.name = this.beanName;
 		}
@@ -191,45 +199,26 @@ public class JobDetailFactoryBean
 		if (this.applicationContextJobDataKey != null) {
 			if (this.applicationContext == null) {
 				throw new IllegalStateException(
-					"JobDetailBean needs to be set up in an ApplicationContext " +
-					"to be able to handle an 'applicationContextJobDataKey'");
+						"JobDetailBean needs to be set up in an ApplicationContext " +
+						"to be able to handle an 'applicationContextJobDataKey'");
 			}
 			getJobDataMap().put(this.applicationContextJobDataKey, this.applicationContext);
 		}
 
-		/*
 		JobDetailImpl jdi = new JobDetailImpl();
-		jdi.setName(this.name);
+		jdi.setName(this.name != null ? this.name : toString());
 		jdi.setGroup(this.group);
 		jdi.setJobClass(this.jobClass);
 		jdi.setJobDataMap(this.jobDataMap);
 		jdi.setDurability(this.durability);
+		jdi.setRequestsRecovery(this.requestsRecovery);
 		jdi.setDescription(this.description);
 		this.jobDetail = jdi;
-		*/
-
-		Class<?> jobDetailClass;
-		try {
-			jobDetailClass = getClass().getClassLoader().loadClass("org.quartz.impl.JobDetailImpl");
-		}
-		catch (ClassNotFoundException ex) {
-			jobDetailClass = JobDetail.class;
-		}
-		BeanWrapper bw = new BeanWrapperImpl(jobDetailClass);
-		MutablePropertyValues pvs = new MutablePropertyValues();
-		pvs.add("name", this.name);
-		pvs.add("group", this.group);
-		pvs.add("jobClass", this.jobClass);
-		pvs.add("jobDataMap", this.jobDataMap);
-		pvs.add("durability", this.durability);
-		pvs.add("requestsRecovery", this.requestsRecovery);
-		pvs.add("description", this.description);
-		bw.setPropertyValues(pvs);
-		this.jobDetail = (JobDetail) bw.getWrappedInstance();
 	}
 
 
 	@Override
+	@Nullable
 	public JobDetail getObject() {
 		return this.jobDetail;
 	}

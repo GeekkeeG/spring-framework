@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,9 +17,9 @@
 package org.springframework.cache.annotation;
 
 import java.io.Serializable;
-import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.springframework.cache.interceptor.AbstractFallbackCacheOperationSource;
 import org.springframework.cache.interceptor.CacheOperation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -40,11 +41,11 @@ import org.springframework.util.Assert;
  *
  * @author Costin Leau
  * @author Juergen Hoeller
+ * @author Stephane Nicoll
  * @since 3.1
  */
 @SuppressWarnings("serial")
-public class AnnotationCacheOperationSource extends AbstractFallbackCacheOperationSource
-		implements Serializable {
+public class AnnotationCacheOperationSource extends AbstractFallbackCacheOperationSource implements Serializable {
 
 	private final boolean publicMethodsOnly;
 
@@ -68,8 +69,7 @@ public class AnnotationCacheOperationSource extends AbstractFallbackCacheOperati
 	 */
 	public AnnotationCacheOperationSource(boolean publicMethodsOnly) {
 		this.publicMethodsOnly = publicMethodsOnly;
-		this.annotationParsers = new LinkedHashSet<CacheAnnotationParser>(1);
-		this.annotationParsers.add(new SpringCacheAnnotationParser());
+		this.annotationParsers = Collections.singleton(new SpringCacheAnnotationParser());
 	}
 
 	/**
@@ -89,9 +89,7 @@ public class AnnotationCacheOperationSource extends AbstractFallbackCacheOperati
 	public AnnotationCacheOperationSource(CacheAnnotationParser... annotationParsers) {
 		this.publicMethodsOnly = true;
 		Assert.notEmpty(annotationParsers, "At least one CacheAnnotationParser needs to be specified");
-		Set<CacheAnnotationParser> parsers = new LinkedHashSet<CacheAnnotationParser>(annotationParsers.length);
-		Collections.addAll(parsers, annotationParsers);
-		this.annotationParsers = parsers;
+		this.annotationParsers = new LinkedHashSet<>(Arrays.asList(annotationParsers));
 	}
 
 	/**
@@ -106,34 +104,51 @@ public class AnnotationCacheOperationSource extends AbstractFallbackCacheOperati
 
 
 	@Override
-	protected Collection<CacheOperation> findCacheOperations(Class<?> clazz) {
-		return determineCacheOperations(clazz);
+	public boolean isCandidateClass(Class<?> targetClass) {
+		for (CacheAnnotationParser parser : this.annotationParsers) {
+			if (parser.isCandidateClass(targetClass)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
+	@Nullable
+	protected Collection<CacheOperation> findCacheOperations(Class<?> clazz) {
+		return determineCacheOperations(parser -> parser.parseCacheAnnotations(clazz));
+	}
+
+	@Override
+	@Nullable
 	protected Collection<CacheOperation> findCacheOperations(Method method) {
-		return determineCacheOperations(method);
+		return determineCacheOperations(parser -> parser.parseCacheAnnotations(method));
 	}
 
 	/**
-	 * Determine the cache operation(s) for the given method or class.
+	 * Determine the cache operation(s) for the given {@link CacheOperationProvider}.
 	 * <p>This implementation delegates to configured
-	 * {@link CacheAnnotationParser}s for parsing known annotations into
-	 * Spring's metadata attribute class.
-	 * <p>Can be overridden to support custom annotations that carry
-	 * caching metadata.
-	 * @param ae the annotated method or class
+	 * {@link CacheAnnotationParser CacheAnnotationParsers}
+	 * for parsing known annotations into Spring's metadata attribute class.
+	 * <p>Can be overridden to support custom annotations that carry caching metadata.
+	 * @param provider the cache operation provider to use
 	 * @return the configured caching operations, or {@code null} if none found
 	 */
-	protected Collection<CacheOperation> determineCacheOperations(AnnotatedElement ae) {
+	@Nullable
+	protected Collection<CacheOperation> determineCacheOperations(CacheOperationProvider provider) {
 		Collection<CacheOperation> ops = null;
-		for (CacheAnnotationParser annotationParser : this.annotationParsers) {
-			Collection<CacheOperation> annOps = annotationParser.parseCacheAnnotations(ae);
+		for (CacheAnnotationParser parser : this.annotationParsers) {
+			Collection<CacheOperation> annOps = provider.getCacheOperations(parser);
 			if (annOps != null) {
 				if (ops == null) {
-					ops = new ArrayList<CacheOperation>();
+					ops = annOps;
 				}
-				ops.addAll(annOps);
+				else {
+					Collection<CacheOperation> combined = new ArrayList<>(ops.size() + annOps.size());
+					combined.addAll(ops);
+					combined.addAll(annOps);
+					ops = combined;
+				}
 			}
 		}
 		return ops;
@@ -164,6 +179,23 @@ public class AnnotationCacheOperationSource extends AbstractFallbackCacheOperati
 	@Override
 	public int hashCode() {
 		return this.annotationParsers.hashCode();
+	}
+
+
+	/**
+	 * Callback interface providing {@link CacheOperation} instance(s) based on
+	 * a given {@link CacheAnnotationParser}.
+	 */
+	@FunctionalInterface
+	protected interface CacheOperationProvider {
+
+		/**
+		 * Return the {@link CacheOperation} instance(s) provided by the specified parser.
+		 * @param parser the parser to use
+		 * @return the cache operations, or {@code null} if none found
+		 */
+		@Nullable
+		Collection<CacheOperation> getCacheOperations(CacheAnnotationParser parser);
 	}
 
 }

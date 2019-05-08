@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,7 +31,7 @@ public class NotReadablePropertyException extends InvalidPropertyException {
 	 * @param beanClass the offending bean class
 	 * @param propertyName the offending property
 	 */
-	public NotReadablePropertyException(Class beanClass, String propertyName) {
+	public NotReadablePropertyException(Class<?> beanClass, String propertyName) {
 		super(beanClass, propertyName,
 				"Bean property '" + propertyName + "' is not readable or has an invalid getter method: " +
 				"Does the return type of the getter match the parameter type of the setter?");
@@ -43,8 +43,20 @@ public class NotReadablePropertyException extends InvalidPropertyException {
 	 * @param propertyName the offending property
 	 * @param msg the detail message
 	 */
-	public NotReadablePropertyException(Class beanClass, String propertyName, String msg) {
+	public NotReadablePropertyException(Class<?> beanClass, String propertyName, String msg) {
 		super(beanClass, propertyName, msg);
+	}
+
+	/**
+	 * Create a new NotReadablePropertyException.
+	 * @param beanClass the offending bean class
+	 * @param propertyName the offending property
+	 * @param msg the detail message
+	 * @param cause the root cause
+	 * @since 4.0.9
+	 */
+	public NotReadablePropertyException(Class<?> beanClass, String propertyName, String msg, Throwable cause) {
+		super(beanClass, propertyName, msg, cause);
 	}
 
 }

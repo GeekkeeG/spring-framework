@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,10 +16,9 @@
 
 package org.springframework.aop.aspectj.autoproxy;
 
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.aop.config.AopConfigUtils;
 import org.springframework.aop.config.AopNamespaceUtils;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -32,11 +31,13 @@ import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.beans.factory.xml.XmlReaderContext;
 import org.springframework.tests.beans.CollectingReaderEventListener;
 
+import static org.junit.Assert.*;
+
 /**
  * @author Rob Harrop
  * @author Chris Beams
  */
-public final class AspectJNamespaceHandlerTests {
+public class AspectJNamespaceHandlerTests {
 
 	private ParserContext parserContext;
 

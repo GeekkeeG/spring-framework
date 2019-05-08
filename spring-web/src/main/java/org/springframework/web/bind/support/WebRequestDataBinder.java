@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2002-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,14 +16,13 @@
 
 package org.springframework.web.bind.support;
 
-import java.io.IOException;
-
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.Part;
 
 import org.springframework.beans.MutablePropertyValues;
-import org.springframework.util.ClassUtils;
+import org.springframework.lang.Nullable;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.WebDataBinder;
@@ -69,14 +68,13 @@ import org.springframework.web.multipart.MultipartRequest;
  */
 public class WebRequestDataBinder extends WebDataBinder {
 
-
 	/**
 	 * Create a new WebRequestDataBinder instance, with default object name.
 	 * @param target the target object to bind onto (or {@code null}
 	 * if the binder is just used to convert a plain parameter value)
 	 * @see #DEFAULT_OBJECT_NAME
 	 */
-	public WebRequestDataBinder(Object target) {
+	public WebRequestDataBinder(@Nullable Object target) {
 		super(target);
 	}
 
@@ -86,7 +84,7 @@ public class WebRequestDataBinder extends WebDataBinder {
 	 * if the binder is just used to convert a plain parameter value)
 	 * @param objectName the name of the target object
 	 */
-	public WebRequestDataBinder(Object target, String objectName) {
+	public WebRequestDataBinder(@Nullable Object target, String objectName) {
 		super(target, objectName);
 	}
 
@@ -111,18 +109,51 @@ public class WebRequestDataBinder extends WebDataBinder {
 	 */
 	public void bind(WebRequest request) {
 		MutablePropertyValues mpvs = new MutablePropertyValues(request.getParameterMap());
-
-		if(isMultipartRequest(request) && (request instanceof NativeWebRequest)) {
+		if (isMultipartRequest(request) && request instanceof NativeWebRequest) {
 			MultipartRequest multipartRequest = ((NativeWebRequest) request).getNativeRequest(MultipartRequest.class);
 			if (multipartRequest != null) {
 				bindMultipart(multipartRequest.getMultiFileMap(), mpvs);
 			}
-			else if (ClassUtils.hasMethod(HttpServletRequest.class, "getParts")) {
-				HttpServletRequest serlvetRequest = ((NativeWebRequest) request).getNativeRequest(HttpServletRequest.class);
-				new Servlet3MultipartHelper().bindParts(serlvetRequest, mpvs);
+			else {
+				HttpServletRequest servletRequest = ((NativeWebRequest) request).getNativeRequest(HttpServletRequest.class);
+				if (servletRequest != null) {
+					bindParts(servletRequest, mpvs);
+				}
 			}
 		}
 		doBind(mpvs);
+	}
+
+	/**
+	 * Check if the request is a multipart request (by checking its Content-Type header).
+	 * @param request request with parameters to bind
+	 */
+	private boolean isMultipartRequest(WebRequest request) {
+		String contentType = request.getHeader("Content-Type");
+		return (contentType != null && StringUtils.startsWithIgnoreCase(contentType, "multipart"));
+	}
+
+	private void bindParts(HttpServletRequest request, MutablePropertyValues mpvs) {
+		try {
+			MultiValueMap<String, Part> map = new LinkedMultiValueMap<>();
+			for (Part part : request.getParts()) {
+				map.add(part.getName(), part);
+			}
+			map.forEach((key, values) -> {
+				if (values.size() == 1) {
+					Part part = values.get(0);
+					if (isBindEmptyMultipartFiles() || part.getSize() > 0) {
+						mpvs.add(key, part);
+					}
+				}
+				else {
+					mpvs.add(key, values);
+				}
+			});
+		}
+		catch (Exception ex) {
+			throw new MultipartException("Failed to get request parts", ex);
+		}
 	}
 
 	/**
@@ -135,39 +166,6 @@ public class WebRequestDataBinder extends WebDataBinder {
 		if (getBindingResult().hasErrors()) {
 			throw new BindException(getBindingResult());
 		}
-	}
-
-	/**
-	 * Check if the request is a multipart request (by checking its Content-Type header).
-	 *
-	 * @param request request with parameters to bind
-	 */
-	private boolean isMultipartRequest(WebRequest request) {
-		String contentType = request.getHeader("Content-Type");
-		return ((contentType != null) && StringUtils.startsWithIgnoreCase(contentType, "multipart"));
-	}
-
-
-	/**
-	 * Encapsulate Part binding code for Servlet 3.0+ only containers.
-	 * @see javax.servlet.http.Part
-	 */
-	private static class Servlet3MultipartHelper {
-
-		public void bindParts(HttpServletRequest request, MutablePropertyValues mpvs) {
-			try {
-				for(Part part : request.getParts()) {
-					mpvs.add(part.getName(), part);
-				}
-			}
-			catch (IOException ex) {
-				throw new MultipartException("Failed to get request parts", ex);
-			}
-			catch(ServletException ex) {
-				throw new MultipartException("Failed to get request parts", ex);
-			}
-		}
-
 	}
 
 }

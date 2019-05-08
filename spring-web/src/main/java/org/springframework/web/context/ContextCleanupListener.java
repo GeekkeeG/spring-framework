@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -59,9 +59,9 @@ public class ContextCleanupListener implements ServletContextListener {
 	 * @param sc the ServletContext to check
 	 */
 	static void cleanupAttributes(ServletContext sc) {
-		Enumeration attrNames = sc.getAttributeNames();
+		Enumeration<String> attrNames = sc.getAttributeNames();
 		while (attrNames.hasMoreElements()) {
-			String attrName = (String) attrNames.nextElement();
+			String attrName = attrNames.nextElement();
 			if (attrName.startsWith("org.springframework.")) {
 				Object attrValue = sc.getAttribute(attrName);
 				if (attrValue instanceof DisposableBean) {

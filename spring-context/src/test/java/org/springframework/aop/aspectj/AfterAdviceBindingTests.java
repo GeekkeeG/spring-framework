@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,6 +18,7 @@ package org.springframework.aop.aspectj;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.aop.aspectj.AdviceBindingTestAspect.AdviceBindingCollaborator;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.support.AopUtils;
@@ -35,7 +36,7 @@ import static org.mockito.BDDMockito.*;
  * @author Rod Johnson
  * @author Chris Beams
  */
-public final class AfterAdviceBindingTests {
+public class AfterAdviceBindingTests {
 
 	private AdviceBindingCollaborator mockCollaborator;
 
@@ -43,10 +44,11 @@ public final class AfterAdviceBindingTests {
 
 	private TestBean testBeanTarget;
 
+
 	@Before
-	public void setUp() throws Exception {
+	public void setup() throws Exception {
 		ClassPathXmlApplicationContext ctx =
-			new ClassPathXmlApplicationContext(getClass().getSimpleName() + ".xml", getClass());
+				new ClassPathXmlApplicationContext(getClass().getSimpleName() + ".xml", getClass());
 		AdviceBindingTestAspect afterAdviceAspect = (AdviceBindingTestAspect) ctx.getBean("testAspect");
 
 		testBeanProxy = (ITestBean) ctx.getBean("testBean");
@@ -58,6 +60,7 @@ public final class AfterAdviceBindingTests {
 		mockCollaborator = mock(AdviceBindingCollaborator.class);
 		afterAdviceAspect.setCollaborator(mockCollaborator);
 	}
+
 
 	@Test
 	public void testOneIntArg() {

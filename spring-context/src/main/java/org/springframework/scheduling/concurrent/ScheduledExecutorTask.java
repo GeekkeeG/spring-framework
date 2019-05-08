@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,14 +18,17 @@ package org.springframework.scheduling.concurrent;
 
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
+
 /**
  * JavaBean that describes a scheduled executor task, consisting of the
  * {@link Runnable} and a delay plus period. The period needs to be specified;
  * there is no point in a default for it.
  *
- * <p>The JDK 1.5 {@link java.util.concurrent.ScheduledExecutorService} does
- * not offer more sophisticated scheduling options such as cron expressions.
- * Consider using Quartz for such advanced needs.
+ * <p>The {@link java.util.concurrent.ScheduledExecutorService} does not offer
+ * more sophisticated scheduling options such as cron expressions.
+ * Consider using {@link ThreadPoolTaskScheduler} for such needs.
  *
  * <p>Note that the {@link java.util.concurrent.ScheduledExecutorService} mechanism
  * uses a {@link Runnable} instance that is shared between repeated executions,
@@ -38,6 +41,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class ScheduledExecutorTask {
 
+	@Nullable
 	private Runnable runnable;
 
 	private long delay = 0;
@@ -105,6 +109,7 @@ public class ScheduledExecutorTask {
 	 * Return the Runnable to schedule as executor task.
 	 */
 	public Runnable getRunnable() {
+		Assert.state(this.runnable != null, "No Runnable set");
 		return this.runnable;
 	}
 
@@ -127,7 +132,7 @@ public class ScheduledExecutorTask {
 	/**
 	 * Set the period between repeated task executions, in milliseconds.
 	 * <p>Default is -1, leading to one-time execution. In case of a positive value,
-	 * the task will be executed repeatedly, with the given interval inbetween executions.
+	 * the task will be executed repeatedly, with the given interval in-between executions.
 	 * <p>Note that the semantics of the period value vary between fixed-rate and
 	 * fixed-delay execution.
 	 * <p><b>Note:</b> A period of 0 (for example as fixed delay) is <i>not</i> supported,
@@ -164,7 +169,7 @@ public class ScheduledExecutorTask {
 	 * @see java.util.concurrent.TimeUnit#MILLISECONDS
 	 * @see java.util.concurrent.TimeUnit#SECONDS
 	 */
-	public void setTimeUnit(TimeUnit timeUnit) {
+	public void setTimeUnit(@Nullable TimeUnit timeUnit) {
 		this.timeUnit = (timeUnit != null ? timeUnit : TimeUnit.MILLISECONDS);
 	}
 

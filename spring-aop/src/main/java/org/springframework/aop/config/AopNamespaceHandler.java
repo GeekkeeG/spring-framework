@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,7 +24,7 @@ import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
  * {@code NamespaceHandler} for the {@code aop} namespace.
  *
  * <p>Provides a {@link org.springframework.beans.factory.xml.BeanDefinitionParser} for the
- * {@code &lt;aop:config&gt;} tag. A {@code config} tag can include nested
+ * {@code <aop:config>} tag. A {@code config} tag can include nested
  * {@code pointcut}, {@code advisor} and {@code aspect} tags.
  *
  * <p>The {@code pointcut} tag allows for creation of named

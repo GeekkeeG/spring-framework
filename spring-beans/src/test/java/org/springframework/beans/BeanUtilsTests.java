@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,23 +16,24 @@
 
 package org.springframework.beans;
 
-import static org.junit.Assert.*;
-
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
+
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceEditor;
+import org.springframework.lang.Nullable;
 import org.springframework.tests.sample.beans.DerivedTestBean;
 import org.springframework.tests.sample.beans.ITestBean;
 import org.springframework.tests.sample.beans.TestBean;
 
+import static org.junit.Assert.*;
 
 /**
  * Unit tests for {@link BeanUtils}.
@@ -40,32 +41,44 @@ import org.springframework.tests.sample.beans.TestBean;
  * @author Juergen Hoeller
  * @author Rob Harrop
  * @author Chris Beams
+ * @author Sebastien Deleuze
  * @since 19.05.2003
  */
-public final class BeanUtilsTests {
+public class BeanUtilsTests {
 
-	@Test
-	public void testInstantiateClass() {
-		// give proper class
-		BeanUtils.instantiateClass(ArrayList.class);
+	@Test(expected = FatalBeanException.class)
+	public void testInstantiateClassGivenInterface() {
+		BeanUtils.instantiateClass(List.class);
+	}
 
-		try {
-			// give interface
-			BeanUtils.instantiateClass(List.class);
-			fail("Should have thrown FatalBeanException");
-		}
-		catch (FatalBeanException ex) {
-			// expected
-		}
+	@Test(expected = FatalBeanException.class)
+	public void testInstantiateClassGivenClassWithoutDefaultConstructor() {
+		BeanUtils.instantiateClass(CustomDateEditor.class);
+	}
 
-		try {
-			// give class without default constructor
-			BeanUtils.instantiateClass(CustomDateEditor.class);
-			fail("Should have thrown FatalBeanException");
-		}
-		catch (FatalBeanException ex) {
-			// expected
-		}
+	@Test  // gh-22531
+	public void testInstantiateClassWithOptionalNullableType() throws NoSuchMethodException {
+		Constructor<BeanWithNullableTypes> ctor = BeanWithNullableTypes.class.getDeclaredConstructor(
+				Integer.class, Boolean.class, String.class);
+		BeanWithNullableTypes bean = BeanUtils.instantiateClass(ctor, null, null, "foo");
+		assertNull(bean.getCounter());
+		assertNull(bean.isFlag());
+		assertEquals("foo", bean.getValue());
+	}
+
+	@Test  // gh-22531
+	public void testInstantiateClassWithOptionalPrimitiveType() throws NoSuchMethodException {
+		Constructor<BeanWithPrimitiveTypes> ctor = BeanWithPrimitiveTypes.class.getDeclaredConstructor(int.class, boolean.class, String.class);
+		BeanWithPrimitiveTypes bean = BeanUtils.instantiateClass(ctor, null, null, "foo");
+		assertEquals(0, bean.getCounter());
+		assertEquals(false, bean.isFlag());
+		assertEquals("foo", bean.getValue());
+	}
+
+	@Test(expected = BeanInstantiationException.class)  // gh-22531
+	public void testInstantiateClassWithMoreArgsThanParameters() throws NoSuchMethodException {
+		Constructor<BeanWithPrimitiveTypes> ctor = BeanWithPrimitiveTypes.class.getDeclaredConstructor(int.class, boolean.class, String.class);
+		BeanUtils.instantiateClass(ctor, null, null, "foo", null);
 	}
 
 	@Test
@@ -79,8 +92,7 @@ public final class BeanUtilsTests {
 	@Test
 	public void testBeanPropertyIsArray() {
 		PropertyDescriptor[] descriptors = BeanUtils.getPropertyDescriptors(ContainerBean.class);
-		for (int i = 0; i < descriptors.length; i++) {
-			PropertyDescriptor descriptor = descriptors[i];
+		for (PropertyDescriptor descriptor : descriptors) {
 			if ("containedBeans".equals(descriptor.getName())) {
 				assertTrue("Property should be an array", descriptor.getPropertyType().isArray());
 				assertEquals(descriptor.getPropertyType().getComponentType(), ContainedBean.class);
@@ -171,7 +183,7 @@ public final class BeanUtilsTests {
 		assertTrue("Touchy empty", tb2.getTouchy() == null);
 
 		// "spouse", "touchy", "age" should not be copied
-		BeanUtils.copyProperties(tb, tb2, new String[]{"spouse", "touchy", "age"});
+		BeanUtils.copyProperties(tb, tb2, "spouse", "touchy", "age");
 		assertTrue("Name copied", tb2.getName() == null);
 		assertTrue("Age still empty", tb2.getAge() == 0);
 		assertTrue("Touchy still empty", tb2.getTouchy() == null);
@@ -182,8 +194,21 @@ public final class BeanUtilsTests {
 		NameAndSpecialProperty source = new NameAndSpecialProperty();
 		source.setName("name");
 		TestBean target = new TestBean();
-		BeanUtils.copyProperties(source, target, new String[]{"specialProperty"});
+		BeanUtils.copyProperties(source, target, "specialProperty");
 		assertEquals(target.getName(), "name");
+	}
+
+	@Test
+	public void testCopyPropertiesWithInvalidProperty() {
+		InvalidProperty source = new InvalidProperty();
+		source.setName("name");
+		source.setFlag1(true);
+		source.setFlag2(true);
+		InvalidProperty target = new InvalidProperty();
+		BeanUtils.copyProperties(source, target);
+		assertEquals("name", target.getName());
+		assertTrue(target.getFlag1());
+		assertTrue(target.getFlag2());
 	}
 
 	@Test
@@ -193,35 +218,26 @@ public final class BeanUtilsTests {
 		assertSignatureEquals(desiredMethod, "doSomething()");
 	}
 
-	@Test
-	public void testResolveInvalidSignature() throws Exception {
-		try {
-			BeanUtils.resolveSignature("doSomething(", MethodSignatureBean.class);
-			fail("Should not be able to parse with opening but no closing paren.");
-		}
-		catch (IllegalArgumentException ex) {
-			// success
-		}
+	@Test(expected = IllegalArgumentException.class)
+	public void testResolveInvalidSignatureEndParen() {
+		BeanUtils.resolveSignature("doSomething(", MethodSignatureBean.class);
+	}
 
-		try {
-			BeanUtils.resolveSignature("doSomething)", MethodSignatureBean.class);
-			fail("Should not be able to parse with closing but no opening paren.");
-		}
-		catch (IllegalArgumentException ex) {
-			// success
-		}
+	@Test(expected = IllegalArgumentException.class)
+	public void testResolveInvalidSignatureStartParen() {
+		BeanUtils.resolveSignature("doSomething)", MethodSignatureBean.class);
 	}
 
 	@Test
 	public void testResolveWithAndWithoutArgList() throws Exception {
-		Method desiredMethod = MethodSignatureBean.class.getMethod("doSomethingElse", new Class[]{String.class, int.class});
+		Method desiredMethod = MethodSignatureBean.class.getMethod("doSomethingElse", String.class, int.class);
 		assertSignatureEquals(desiredMethod, "doSomethingElse");
 		assertNull(BeanUtils.resolveSignature("doSomethingElse()", MethodSignatureBean.class));
 	}
 
 	@Test
 	public void testResolveTypedSignature() throws Exception {
-		Method desiredMethod = MethodSignatureBean.class.getMethod("doSomethingElse", new Class[]{String.class, int.class});
+		Method desiredMethod = MethodSignatureBean.class.getMethod("doSomethingElse", String.class, int.class);
 		assertSignatureEquals(desiredMethod, "doSomethingElse(java.lang.String, int)");
 	}
 
@@ -232,20 +248,20 @@ public final class BeanUtilsTests {
 		assertSignatureEquals(desiredMethod, "overloaded()");
 
 		// resolve with single arg
-		desiredMethod = MethodSignatureBean.class.getMethod("overloaded", new Class[]{String.class});
+		desiredMethod = MethodSignatureBean.class.getMethod("overloaded", String.class);
 		assertSignatureEquals(desiredMethod, "overloaded(java.lang.String)");
 
 		// resolve with two args
-		desiredMethod = MethodSignatureBean.class.getMethod("overloaded", new Class[]{String.class, BeanFactory.class});
+		desiredMethod = MethodSignatureBean.class.getMethod("overloaded", String.class, BeanFactory.class);
 		assertSignatureEquals(desiredMethod, "overloaded(java.lang.String, org.springframework.beans.factory.BeanFactory)");
 	}
 
 	@Test
 	public void testResolveSignatureWithArray() throws Exception {
-		Method desiredMethod = MethodSignatureBean.class.getMethod("doSomethingWithAnArray", new Class[]{String[].class});
+		Method desiredMethod = MethodSignatureBean.class.getMethod("doSomethingWithAnArray", String[].class);
 		assertSignatureEquals(desiredMethod, "doSomethingWithAnArray(java.lang.String[])");
 
-		desiredMethod = MethodSignatureBean.class.getMethod("doSomethingWithAMultiDimensionalArray", new Class[]{String[][].class});
+		desiredMethod = MethodSignatureBean.class.getMethod("doSomethingWithAMultiDimensionalArray", String[][].class);
 		assertSignatureEquals(desiredMethod, "doSomethingWithAMultiDimensionalArray(java.lang.String[][])");
 	}
 
@@ -257,7 +273,8 @@ public final class BeanUtilsTests {
 		assertEquals(String.class, keyDescr.getPropertyType());
 		for (PropertyDescriptor propertyDescriptor : descrs) {
 			if (propertyDescriptor.getName().equals(keyDescr.getName())) {
-				assertEquals(propertyDescriptor.getName() + " has unexpected type", keyDescr.getPropertyType(), propertyDescriptor.getPropertyType());
+				assertEquals(propertyDescriptor.getName() + " has unexpected type",
+						keyDescr.getPropertyType(), propertyDescriptor.getPropertyType());
 			}
 		}
 	}
@@ -288,6 +305,51 @@ public final class BeanUtilsTests {
 
 		public int getSpecialProperty() {
 			return specialProperty;
+		}
+	}
+
+
+	@SuppressWarnings("unused")
+	private static class InvalidProperty {
+
+		private String name;
+
+		private String value;
+
+		private boolean flag1;
+
+		private boolean flag2;
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public String getName() {
+			return this.name;
+		}
+
+		public void setValue(int value) {
+			this.value = Integer.toString(value);
+		}
+
+		public String getValue() {
+			return this.value;
+		}
+
+		public void setFlag1(boolean flag1) {
+			this.flag1 = flag1;
+		}
+
+		public Boolean getFlag1() {
+			return this.flag1;
+		}
+
+		public void setFlag2(Boolean flag2) {
+			this.flag2 = flag2;
+		}
+
+		public boolean getFlag2() {
+			return this.flag2;
 		}
 	}
 
@@ -347,6 +409,7 @@ public final class BeanUtilsTests {
 		}
 	}
 
+
 	private interface MapEntry<K, V> {
 
 		K getKey();
@@ -357,6 +420,7 @@ public final class BeanUtilsTests {
 
 		void setValue(V value);
 	}
+
 
 	private static class Bean implements MapEntry<String, String> {
 
@@ -382,6 +446,64 @@ public final class BeanUtilsTests {
 		@Override
 		public void setValue(String aValue) {
 			value = aValue;
+		}
+	}
+
+	private static class BeanWithNullableTypes {
+
+		private Integer counter;
+
+		private Boolean flag;
+
+		private String value;
+
+		@SuppressWarnings("unused")
+		public BeanWithNullableTypes(@Nullable Integer counter, @Nullable Boolean flag, String value) {
+			this.counter = counter;
+			this.flag = flag;
+			this.value = value;
+		}
+
+		@Nullable
+		public Integer getCounter() {
+			return counter;
+		}
+
+		@Nullable
+		public Boolean isFlag() {
+			return flag;
+		}
+
+		public String getValue() {
+			return value;
+		}
+	}
+
+	private static class BeanWithPrimitiveTypes {
+
+		private int counter;
+
+		private boolean flag;
+
+		private String value;
+
+		@SuppressWarnings("unused")
+		public BeanWithPrimitiveTypes(int counter, boolean flag, String value) {
+			this.counter = counter;
+			this.flag = flag;
+			this.value = value;
+		}
+
+		public int getCounter() {
+			return counter;
+		}
+
+		public boolean isFlag() {
+			return flag;
+		}
+
+		public String getValue() {
+			return value;
 		}
 	}
 

@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2008 the original author or authors.
+ * Copyright 2002-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,9 +18,8 @@ package org.springframework.jdbc.support;
 
 import java.sql.SQLException;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
-import org.springframework.core.JdkVersion;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -31,23 +30,22 @@ import org.springframework.dao.RecoverableDataAccessException;
 import org.springframework.dao.TransientDataAccessResourceException;
 import org.springframework.jdbc.BadSqlGrammarException;
 
+import static org.junit.Assert.*;
+
 /**
  * @author Thomas Risberg
  */
-public class SQLExceptionSubclassTranslatorTests extends TestCase {
+public class SQLExceptionSubclassTranslatorTests {
 
 	private static SQLErrorCodes ERROR_CODES = new SQLErrorCodes();
 
 	static {
-		ERROR_CODES.setBadSqlGrammarCodes(new String[] { "1" });
+		ERROR_CODES.setBadSqlGrammarCodes("1");
 	}
 
 
-	public void testErrorCodeTranslation() {
-		if (JdkVersion.getMajorJavaVersion() < JdkVersion.JAVA_16) {
-			return;
-		}
-
+	@Test
+	public void errorCodeTranslation() {
 		SQLExceptionTranslator sext = new SQLErrorCodeSQLExceptionTranslator(ERROR_CODES);
 
 		SQLException dataIntegrityViolationEx = SQLExceptionSubclassFactory.newSQLDataException("", "", 0);

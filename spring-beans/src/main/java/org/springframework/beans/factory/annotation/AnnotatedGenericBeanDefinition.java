@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,7 +18,9 @@ package org.springframework.beans.factory.annotation;
 
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.core.type.MethodMetadata;
 import org.springframework.core.type.StandardAnnotationMetadata;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -43,6 +45,9 @@ public class AnnotatedGenericBeanDefinition extends GenericBeanDefinition implem
 
 	private final AnnotationMetadata metadata;
 
+	@Nullable
+	private MethodMetadata factoryMethodMetadata;
+
 
 	/**
 	 * Create a new AnnotatedGenericBeanDefinition for the given bean class.
@@ -50,7 +55,7 @@ public class AnnotatedGenericBeanDefinition extends GenericBeanDefinition implem
 	 */
 	public AnnotatedGenericBeanDefinition(Class<?> beanClass) {
 		setBeanClass(beanClass);
-		this.metadata = new StandardAnnotationMetadata(beanClass, true);
+		this.metadata = AnnotationMetadata.introspect(beanClass);
 	}
 
 	/**
@@ -74,10 +79,30 @@ public class AnnotatedGenericBeanDefinition extends GenericBeanDefinition implem
 		this.metadata = metadata;
 	}
 
+	/**
+	 * Create a new AnnotatedGenericBeanDefinition for the given annotation metadata,
+	 * based on an annotated class and a factory method on that class.
+	 * @param metadata the annotation metadata for the bean class in question
+	 * @param factoryMethodMetadata metadata for the selected factory method
+	 * @since 4.1.1
+	 */
+	public AnnotatedGenericBeanDefinition(AnnotationMetadata metadata, MethodMetadata factoryMethodMetadata) {
+		this(metadata);
+		Assert.notNull(factoryMethodMetadata, "MethodMetadata must not be null");
+		setFactoryMethodName(factoryMethodMetadata.getMethodName());
+		this.factoryMethodMetadata = factoryMethodMetadata;
+	}
+
 
 	@Override
 	public final AnnotationMetadata getMetadata() {
-		 return this.metadata;
+		return this.metadata;
+	}
+
+	@Override
+	@Nullable
+	public final MethodMetadata getFactoryMethodMetadata() {
+		return this.factoryMethodMetadata;
 	}
 
 }

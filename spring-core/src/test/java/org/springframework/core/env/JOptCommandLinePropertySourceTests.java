@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,18 +16,15 @@
 
 package org.springframework.core.env;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-
 import java.util.Arrays;
 
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
-
 import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.*;
 
 /**
  * Unit tests for {@link JOptCommandLinePropertySource}.
@@ -162,5 +159,19 @@ public class JOptCommandLinePropertySourceTests {
 		assertThat(ps.containsProperty("o2"), is(true));
 		String nonOptionArgs = ps.getProperty("NOA");
 		assertThat(nonOptionArgs, equalTo("noa1,noa2"));
+	}
+
+	@Test
+	public void withRequiredArg_ofTypeEnum() {
+		OptionParser parser = new OptionParser();
+		parser.accepts("o1").withRequiredArg().ofType(OptionEnum.class);
+		OptionSet options = parser.parse("--o1=VAL_1");
+
+		PropertySource<?> ps = new JOptCommandLinePropertySource(options);
+		assertThat(ps.getProperty("o1"), equalTo("VAL_1"));
+	}
+
+	public static enum OptionEnum {
+		VAL_1;
 	}
 }

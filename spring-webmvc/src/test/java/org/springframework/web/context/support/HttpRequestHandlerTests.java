@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,22 +16,22 @@
 
 package org.springframework.web.context.support;
 
-import static org.junit.Assert.*;
-
 import java.io.IOException;
-
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.junit.Test;
+
 import org.springframework.mock.web.test.MockHttpServletRequest;
 import org.springframework.mock.web.test.MockHttpServletResponse;
 import org.springframework.mock.web.test.MockServletConfig;
 import org.springframework.mock.web.test.MockServletContext;
 import org.springframework.web.HttpRequestHandler;
 import org.springframework.web.context.WebApplicationContext;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Juergen Hoeller

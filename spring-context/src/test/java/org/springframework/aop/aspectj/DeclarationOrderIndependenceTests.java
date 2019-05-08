@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,21 +16,22 @@
 
 package org.springframework.aop.aspectj;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.Serializable;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Adrian Colyer
  * @author Chris Beams
  */
-public final class DeclarationOrderIndependenceTests {
+public class DeclarationOrderIndependenceTests {
 
 	private TopsyTurvyAspect aspect;
 
@@ -38,12 +39,13 @@ public final class DeclarationOrderIndependenceTests {
 
 
 	@Before
-	public void setUp() {
+	public void setup() {
 		ClassPathXmlApplicationContext ctx =
-			new ClassPathXmlApplicationContext(getClass().getSimpleName() + ".xml", getClass());
+				new ClassPathXmlApplicationContext(getClass().getSimpleName() + ".xml", getClass());
 		aspect = (TopsyTurvyAspect) ctx.getBean("topsyTurvyAspect");
 		target = (TopsyTurvyTarget) ctx.getBean("topsyTurvyTarget");
 	}
+
 
 	@Test
 	public void testTargetIsSerializable() {
@@ -83,11 +85,9 @@ public final class DeclarationOrderIndependenceTests {
 	/** public visibility is required */
 	public static class BeanNameAwareMixin implements BeanNameAware {
 
+		@SuppressWarnings("unused")
 		private String beanName;
 
-		/* (non-Javadoc)
-		 * @see org.springframework.beans.factory.BeanNameAware#setBeanName(java.lang.String)
-		 */
 		@Override
 		public void setBeanName(String name) {
 			this.beanName = name;
@@ -135,10 +135,9 @@ class TopsyTurvyAspect {
 
 interface TopsyTurvyTarget {
 
-	public abstract void doSomething();
+	void doSomething();
 
-	public abstract int getX();
-
+	int getX();
 }
 
 
@@ -146,22 +145,15 @@ class TopsyTurvyTargetImpl implements TopsyTurvyTarget {
 
 	private int x = 5;
 
-	/* (non-Javadoc)
-	 * @see org.springframework.aop.aspectj.TopsyTurvyTarget#doSomething()
-	 */
 	@Override
 	public void doSomething() {
 		this.x = 10;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.aop.aspectj.TopsyTurvyTarget#getX()
-	 */
 	@Override
 	public int getX() {
 		return x;
 	}
-
 }
 
 
@@ -171,28 +163,18 @@ class AspectCollaborator implements TopsyTurvyAspect.Collaborator {
 	public boolean aroundFired = false;
 	public boolean beforeFired = false;
 
-	/* (non-Javadoc)
-	 * @see org.springframework.aop.aspectj.TopsyTurvyAspect.Collaborator#afterReturningAdviceFired()
-	 */
 	@Override
 	public void afterReturningAdviceFired() {
 		this.afterReturningFired = true;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.aop.aspectj.TopsyTurvyAspect.Collaborator#aroundAdviceFired()
-	 */
 	@Override
 	public void aroundAdviceFired() {
 		this.aroundFired = true;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.aop.aspectj.TopsyTurvyAspect.Collaborator#beforeAdviceFired()
-	 */
 	@Override
 	public void beforeAdviceFired() {
 		this.beforeFired = true;
 	}
-
 }

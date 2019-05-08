@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,10 +16,12 @@
 
 package org.springframework.validation;
 
-import static org.junit.Assert.*;
-
 import org.junit.Test;
+
+import org.springframework.lang.Nullable;
 import org.springframework.tests.sample.beans.TestBean;
+
+import static org.junit.Assert.*;
 
 /**
  * Unit tests for {@link ValidationUtils}.
@@ -31,14 +33,14 @@ import org.springframework.tests.sample.beans.TestBean;
  */
 public class ValidationUtilsTests {
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void testInvokeValidatorWithNullValidator() throws Exception {
 		TestBean tb = new TestBean();
 		Errors errors = new BeanPropertyBindingResult(tb, "tb");
 		ValidationUtils.invokeValidator(null, tb, errors);
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void testInvokeValidatorWithNullErrors() throws Exception {
 		TestBean tb = new TestBean();
 		ValidationUtils.invokeValidator(new EmptyValidator(), tb, null);
@@ -167,7 +169,7 @@ public class ValidationUtilsTests {
 		}
 
 		@Override
-		public void validate(Object obj, Errors errors) {
+		public void validate(@Nullable Object obj, Errors errors) {
 			ValidationUtils.rejectIfEmpty(errors, "name", "EMPTY", "You must enter a name!");
 		}
 	}
@@ -181,7 +183,7 @@ public class ValidationUtilsTests {
 		}
 
 		@Override
-		public void validate(Object obj, Errors errors) {
+		public void validate(@Nullable Object obj, Errors errors) {
 			ValidationUtils.rejectIfEmptyOrWhitespace(errors, "name", "EMPTY_OR_WHITESPACE", "You must enter a name!");
 		}
 	}

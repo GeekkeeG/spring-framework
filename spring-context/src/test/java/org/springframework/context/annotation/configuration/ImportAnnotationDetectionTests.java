@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,23 +16,21 @@
 
 package org.springframework.context.annotation.configuration;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.junit.Test;
-import org.springframework.stereotype.Service;
-import org.springframework.tests.sample.beans.TestBean;
+
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.tests.sample.beans.TestBean;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Tests that @Import may be used both as a locally declared and meta-declared
@@ -42,6 +40,7 @@ import static org.junit.Assert.*;
  * @author Chris Beams
  * @since 3.1
  */
+@SuppressWarnings("resource")
 public class ImportAnnotationDetectionTests {
 
 	@Test

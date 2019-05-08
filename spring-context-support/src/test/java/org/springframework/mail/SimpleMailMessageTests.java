@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,13 +16,13 @@
 
 package org.springframework.mail;
 
-import static org.junit.Assert.*;
-
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Dmitriy Kopylenko
@@ -31,7 +31,7 @@ import org.junit.Test;
  * @author Chris Beams
  * @since 10.09.2003
  */
-public final class SimpleMailMessageTests {
+public class SimpleMailMessageTests {
 
 	@Test
 	public void testSimpleMessageCopyCtor() {
@@ -155,12 +155,12 @@ public final class SimpleMailMessageTests {
 		assertTrue(message1.equals(message2));
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void testCopyCtorChokesOnNullOriginalMessage() throws Exception {
 		new SimpleMailMessage(null);
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void testCopyToChokesOnNullTargetMessage() throws Exception {
 		new SimpleMailMessage().copyTo(null);
 	}

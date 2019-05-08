@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,8 +15,6 @@
  */
 
 package org.springframework.test.context.support;
-
-import static org.junit.Assert.assertArrayEquals;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,7 +28,10 @@ import org.junit.runners.Parameterized.Parameters;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextLoader;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
+
+import static org.junit.Assert.*;
 
 /**
  * JUnit 4 based unit test which verifies proper
@@ -38,7 +39,7 @@ import org.springframework.util.ObjectUtils;
  * {@code resource locations} by a {@link GenericXmlContextLoader}
  * configured via {@link ContextConfiguration @ContextConfiguration}.
  * Specifically, this test addresses the issues raised in <a
- * href="http://opensource.atlassian.com/projects/spring/browse/SPR-3949"
+ * href="https://opensource.atlassian.com/projects/spring/browse/SPR-3949"
  * target="_blank">SPR-3949</a>:
  * <em>ContextConfiguration annotation should accept not only classpath resources</em>.
  *
@@ -54,12 +55,7 @@ public class GenericXmlContextLoaderResourceLocationsTests {
 	protected final String[] expectedLocations;
 
 
-	public GenericXmlContextLoaderResourceLocationsTests(final Class<?> testClass, final String[] expectedLocations) {
-		this.testClass = testClass;
-		this.expectedLocations = expectedLocations;
-	}
-
-	@Parameters
+	@Parameters(name = "{0}")
 	public static Collection<Object[]> contextConfigurationLocationsData() {
 		@ContextConfiguration
 		class ClasspathNonExistentDefaultLocationsTestCase {
@@ -81,41 +77,46 @@ public class GenericXmlContextLoaderResourceLocationsTests {
 		class ExplicitFileLocationsTestCase {
 		}
 
-		@ContextConfiguration("http://example.com/context.xml")
+		@ContextConfiguration("https://example.com/context.xml")
 		class ExplicitUrlLocationsTestCase {
 		}
 
 		@ContextConfiguration({ "context1.xml", "classpath:context2.xml", "/context3.xml",
-			"file:/testing/directory/context.xml", "http://example.com/context.xml" })
+			"file:/testing/directory/context.xml", "https://example.com/context.xml" })
 		class ExplicitMixedPathTypesLocationsTestCase {
 		}
 
 		return Arrays.asList(new Object[][] {
 
-			{ ClasspathNonExistentDefaultLocationsTestCase.class, new String[] {} },
+			{ ClasspathNonExistentDefaultLocationsTestCase.class.getSimpleName(), new String[] {} },
 
 			{
-				ClasspathExistentDefaultLocationsTestCase.class,
-				new String[] { "classpath:/org/springframework/test/context/support/GenericXmlContextLoaderResourceLocationsTests$1ClasspathExistentDefaultLocationsTestCase-context.xml" } },
+				ClasspathExistentDefaultLocationsTestCase.class.getSimpleName(),
+				new String[] { "classpath:org/springframework/test/context/support/GenericXmlContextLoaderResourceLocationsTests$1ClasspathExistentDefaultLocationsTestCase-context.xml" } },
 
 			{
-				ImplicitClasspathLocationsTestCase.class,
+				ImplicitClasspathLocationsTestCase.class.getSimpleName(),
 				new String[] { "classpath:/org/springframework/test/context/support/context1.xml",
 					"classpath:/org/springframework/test/context/support/context2.xml" } },
 
-			{ ExplicitClasspathLocationsTestCase.class, new String[] { "classpath:context.xml" } },
+			{ ExplicitClasspathLocationsTestCase.class.getSimpleName(), new String[] { "classpath:context.xml" } },
 
-			{ ExplicitFileLocationsTestCase.class, new String[] { "file:/testing/directory/context.xml" } },
+			{ ExplicitFileLocationsTestCase.class.getSimpleName(), new String[] { "file:/testing/directory/context.xml" } },
 
-			{ ExplicitUrlLocationsTestCase.class, new String[] { "http://example.com/context.xml" } },
+			{ ExplicitUrlLocationsTestCase.class.getSimpleName(), new String[] { "https://example.com/context.xml" } },
 
 			{
-				ExplicitMixedPathTypesLocationsTestCase.class,
+				ExplicitMixedPathTypesLocationsTestCase.class.getSimpleName(),
 				new String[] { "classpath:/org/springframework/test/context/support/context1.xml",
 					"classpath:context2.xml", "classpath:/context3.xml", "file:/testing/directory/context.xml",
-					"http://example.com/context.xml" } }
+					"https://example.com/context.xml" } }
 
 		});
+	}
+
+	public GenericXmlContextLoaderResourceLocationsTests(final String testClassName, final String[] expectedLocations) throws Exception {
+		this.testClass = ClassUtils.forName(getClass().getName() + "$1" + testClassName, getClass().getClassLoader());
+		this.expectedLocations = expectedLocations;
 	}
 
 	@Test

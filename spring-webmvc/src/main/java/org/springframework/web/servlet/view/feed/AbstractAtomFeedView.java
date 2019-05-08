@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2008 the original author or authors.
+ * Copyright 2002-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,31 +21,34 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.sun.syndication.feed.WireFeed;
-import com.sun.syndication.feed.atom.Entry;
-import com.sun.syndication.feed.atom.Feed;
+import com.rometools.rome.feed.atom.Entry;
+import com.rometools.rome.feed.atom.Feed;
 
 /**
- * Abstract superclass for Atom Feed views, using java.net's
- * <a href="https://rome.dev.java.net/">ROME</a> package.
+ * Abstract superclass for Atom Feed views, using the
+ * <a href="https://github.com/rometools/rome">ROME</a> package.
+ *
+ * <p>><b>NOTE: As of Spring 4.1, this is based on the {@code com.rometools}
+ * variant of ROME, version 1.5. Please upgrade your build dependency.</b>
  *
  * <p>Application-specific view classes will extend this class.
  * The view will be held in the subclass itself, not in a template.
- *
- * <p>Main entry points are the {@link #buildFeedMetadata(Map, WireFeed, HttpServletRequest)} and
- * {@link #buildFeedEntries(Map, HttpServletRequest, HttpServletResponse)}.
+ * Main entry points are the {@link #buildFeedMetadata} and {@link #buildFeedEntries}.
  *
  * <p>Thanks to Jettro Coenradie and Sergio Bossa for the original feed view prototype!
  *
  * @author Arjen Poutsma
  * @author Juergen Hoeller
  * @since 3.0
- * @see #buildFeedMetadata(Map, WireFeed, HttpServletRequest)
- * @see #buildFeedEntries(Map, HttpServletRequest, HttpServletResponse)
- * @see <a href="http://www.atomenabled.org/developers/syndication/">Atom Syndication Format</a>
+ * @see #buildFeedMetadata
+ * @see #buildFeedEntries
+ * @see <a href="https://www.atomenabled.org/developers/syndication/">Atom Syndication Format</a>
  */
 public abstract class AbstractAtomFeedView extends AbstractFeedView<Feed> {
 
+	/**
+	 * The default feed type used.
+	 */
 	public static final String DEFAULT_FEED_TYPE = "atom_1.0";
 
 	private String feedType = DEFAULT_FEED_TYPE;
@@ -56,7 +59,7 @@ public abstract class AbstractAtomFeedView extends AbstractFeedView<Feed> {
 	}
 
 	/**
-	 * Sets the Rome feed type to use.
+	 * Set the Rome feed type to use.
 	 * <p>Defaults to Atom 1.0.
 	 * @see Feed#setFeedType(String)
 	 * @see #DEFAULT_FEED_TYPE
@@ -96,7 +99,7 @@ public abstract class AbstractAtomFeedView extends AbstractFeedView<Feed> {
 	 * @param request in case we need locale etc. Shouldn't look at attributes.
 	 * @param response in case we need to set cookies. Shouldn't write to it.
 	 * @return the feed entries to be added to the feed
-	 * @throws Exception any exception that occured during document building
+	 * @throws Exception any exception that occurred during document building
 	 * @see Entry
 	 */
 	protected abstract List<Entry> buildFeedEntries(

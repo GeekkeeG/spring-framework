@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,78 +16,59 @@
 
 package org.springframework.messaging.handler.annotation.support;
 
-import org.springframework.core.MethodParameter;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.method.HandlerMethodArgumentResolver;
-import org.springframework.messaging.support.converter.MessageConverter;
-import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
-import org.springframework.util.StringUtils;
-
+import org.springframework.lang.Nullable;
+import org.springframework.messaging.converter.MessageConverter;
+import org.springframework.validation.Validator;
 
 /**
  * A resolver to extract and convert the payload of a message using a
- * {@link MessageConverter}.
- *
- * <p>
- * This {@link HandlerMethodArgumentResolver} should be ordered last as it supports all
- * types and does not require the {@link Payload} annotation.
+ * {@link MessageConverter}. It also validates the payload using a
+ * {@link Validator} if the argument is annotated with a Validation annotation.
  *
  * @author Rossen Stoyanchev
+ * @author Juergen Hoeller
+ * @author Brian Clozel
+ * @author Stephane Nicoll
  * @since 4.0
+ * @deprecated as of 5.2, in favor of {@link PayloadMethodArgumentResolver}
  */
-public class PayloadArgumentResolver implements HandlerMethodArgumentResolver {
+@Deprecated
+public class PayloadArgumentResolver extends PayloadMethodArgumentResolver {
 
-	private final MessageConverter converter;
-
-
+	/**
+	 * Create a new {@code PayloadArgumentResolver} with the given
+	 * {@link MessageConverter}.
+	 * @param messageConverter the MessageConverter to use (required)
+	 * @since 4.0.9
+	 */
 	public PayloadArgumentResolver(MessageConverter messageConverter) {
-		Assert.notNull(messageConverter, "converter is required");
-		this.converter = messageConverter;
+		this(messageConverter, null);
 	}
 
-	@Override
-	public boolean supportsParameter(MethodParameter parameter) {
-		return true;
+	/**
+	 * Create a new {@code PayloadArgumentResolver} with the given
+	 * {@link MessageConverter} and {@link Validator}.
+	 * @param messageConverter the MessageConverter to use (required)
+	 * @param validator the Validator to use (optional)
+	 */
+	public PayloadArgumentResolver(MessageConverter messageConverter, @Nullable Validator validator) {
+		this(messageConverter, validator, true);
 	}
 
-	@Override
-	public Object resolveArgument(MethodParameter parameter, Message<?> message) throws Exception {
+	/**
+	 * Create a new {@code PayloadArgumentResolver} with the given
+	 * {@link MessageConverter} and {@link Validator}.
+	 * @param messageConverter the MessageConverter to use (required)
+	 * @param validator the Validator to use (optional)
+	 * @param useDefaultResolution if "true" (the default) this resolver supports
+	 * all parameters; if "false" then only arguments with the {@code @Payload}
+	 * annotation are supported.
+	 */
+	public PayloadArgumentResolver(MessageConverter messageConverter, @Nullable Validator validator,
+			boolean useDefaultResolution) {
 
-		Class<?> sourceClass = message.getPayload().getClass();
-		Class<?> targetClass = parameter.getParameterType();
 
-		if (ClassUtils.isAssignable(targetClass,sourceClass)) {
-			return message.getPayload();
-		}
-
-		Payload annot = parameter.getParameterAnnotation(Payload.class);
-
-		if (isEmptyPayload(message)) {
-			if ((annot != null) && !annot.required()) {
-				return null;
-			}
-		}
-
-		if ((annot != null) && StringUtils.hasText(annot.value())) {
-			throw new IllegalStateException("@Payload SpEL expressions not supported by this resolver.");
-		}
-
-		return this.converter.fromMessage(message, targetClass);
-	}
-
-	protected boolean isEmptyPayload(Message<?> message) {
-		Object payload = message.getPayload();
-		if (payload instanceof byte[]) {
-			return ((byte[]) message.getPayload()).length == 0;
-		}
-		else if (payload instanceof String) {
-			return ((String) payload).trim().equals("");
-		}
-		else {
-			return false;
-		}
+		super(messageConverter, validator, useDefaultResolution);
 	}
 
 }

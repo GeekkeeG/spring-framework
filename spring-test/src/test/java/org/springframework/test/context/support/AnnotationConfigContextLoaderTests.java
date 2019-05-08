@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,10 +16,14 @@
 
 package org.springframework.test.context.support;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+import org.springframework.test.context.MergedContextConfiguration;
+
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
 /**
  * Unit tests for {@link AnnotationConfigContextLoader}.
@@ -31,6 +35,25 @@ public class AnnotationConfigContextLoaderTests {
 
 	private final AnnotationConfigContextLoader contextLoader = new AnnotationConfigContextLoader();
 
+	private static final String[] EMPTY_STRING_ARRAY = new String[0];
+	private static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
+
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
+
+
+	/**
+	 * @since 4.0.4
+	 */
+	@Test
+	public void configMustNotContainLocations() throws Exception {
+		expectedException.expect(IllegalStateException.class);
+		expectedException.expectMessage(containsString("does not support resource locations"));
+
+		MergedContextConfiguration mergedConfig = new MergedContextConfiguration(getClass(),
+			new String[] { "config.xml" }, EMPTY_CLASS_ARRAY, EMPTY_STRING_ARRAY, contextLoader);
+		contextLoader.loadContext(mergedConfig);
+	}
 
 	@Test
 	public void detectDefaultConfigurationClassesForAnnotatedInnerClass() {

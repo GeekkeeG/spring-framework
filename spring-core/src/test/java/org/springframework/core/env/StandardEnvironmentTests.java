@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2002-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,19 +17,17 @@
 package org.springframework.core.env;
 
 import java.lang.reflect.Field;
-
 import java.security.AccessControlException;
 import java.security.Permission;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
 import org.junit.Test;
+
+import org.springframework.core.SpringProperties;
 import org.springframework.mock.env.MockPropertySource;
 
-
-import static java.lang.String.*;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.springframework.core.env.AbstractEnvironment.*;
@@ -38,7 +36,9 @@ import static org.springframework.core.env.AbstractEnvironment.*;
  * Unit tests for {@link StandardEnvironment}.
  *
  * @author Chris Beams
+ * @author Juergen Hoeller
  */
+@SuppressWarnings("deprecation")
 public class StandardEnvironmentTests {
 
 	private static final String ALLOWED_PROPERTY_NAME = "theanswer";
@@ -52,7 +52,8 @@ public class StandardEnvironmentTests {
 	private static final Object NON_STRING_PROPERTY_NAME = new Object();
 	private static final Object NON_STRING_PROPERTY_VALUE = new Object();
 
-	private ConfigurableEnvironment environment = new StandardEnvironment();
+	private final ConfigurableEnvironment environment = new StandardEnvironment();
+
 
 	@Test
 	public void merge() {
@@ -60,15 +61,15 @@ public class StandardEnvironmentTests {
 		child.setActiveProfiles("c1", "c2");
 		child.getPropertySources().addLast(
 				new MockPropertySource("childMock")
-					.withProperty("childKey", "childVal")
-					.withProperty("bothKey", "childBothVal"));
+						.withProperty("childKey", "childVal")
+						.withProperty("bothKey", "childBothVal"));
 
 		ConfigurableEnvironment parent = new StandardEnvironment();
 		parent.setActiveProfiles("p1", "p2");
 		parent.getPropertySources().addLast(
 				new MockPropertySource("parentMock")
-					.withProperty("parentKey", "parentVal")
-					.withProperty("bothKey", "parentBothVal"));
+						.withProperty("parentKey", "parentVal")
+						.withProperty("bothKey", "parentBothVal"));
 
 		assertThat(child.getProperty("childKey"), is("childVal"));
 		assertThat(child.getProperty("parentKey"), nullValue());
@@ -130,42 +131,42 @@ public class StandardEnvironmentTests {
 		assertThat(activeProfiles.length, is(2));
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void setActiveProfiles_withNullProfileArray() {
-		environment.setActiveProfiles((String[])null);
+		environment.setActiveProfiles((String[]) null);
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void setActiveProfiles_withNullProfile() {
-		environment.setActiveProfiles((String)null);
+		environment.setActiveProfiles((String) null);
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void setActiveProfiles_withEmptyProfile() {
 		environment.setActiveProfiles("");
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void setActiveProfiles_withNotOperator() {
 		environment.setActiveProfiles("p1", "!p2");
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void setDefaultProfiles_withNullProfileArray() {
-		environment.setDefaultProfiles((String[])null);
+		environment.setDefaultProfiles((String[]) null);
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void setDefaultProfiles_withNullProfile() {
-		environment.setDefaultProfiles((String)null);
+		environment.setDefaultProfiles((String) null);
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void setDefaultProfiles_withEmptyProfile() {
 		environment.setDefaultProfiles("");
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void setDefaultProfiles_withNotOperator() {
 		environment.setDefaultProfiles("d1", "!d2");
 	}
@@ -203,6 +204,17 @@ public class StandardEnvironmentTests {
 		environment.setDefaultProfiles("d1", "d2");
 		assertThat(environment.getDefaultProfiles(), equalTo(new String[]{"d1","d2"}));
 		System.getProperties().remove(DEFAULT_PROFILES_PROPERTY_NAME);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void defaultProfileWithCircularPlaceholder() {
+		System.setProperty(DEFAULT_PROFILES_PROPERTY_NAME, "${spring.profiles.default}");
+		try {
+			environment.getDefaultProfiles();
+		}
+		finally {
+			System.getProperties().remove(DEFAULT_PROFILES_PROPERTY_NAME);
+		}
 	}
 
 	@Test
@@ -253,26 +265,25 @@ public class StandardEnvironmentTests {
 		assertThat(Arrays.asList(environment.getDefaultProfiles()), hasItems("pd2", "pd3"));
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void acceptsProfiles_withEmptyArgumentList() {
 		environment.acceptsProfiles();
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void acceptsProfiles_withNullArgumentList() {
-		environment.acceptsProfiles((String[])null);
+		environment.acceptsProfiles((String[]) null);
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void acceptsProfiles_withNullArgument() {
-		environment.acceptsProfiles((String)null);
+		environment.acceptsProfiles((String) null);
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void acceptsProfiles_withEmptyArgument() {
 		environment.acceptsProfiles("");
 	}
-
 
 	@Test
 	public void acceptsProfiles_activeProfileSetProgrammatically() {
@@ -311,9 +322,18 @@ public class StandardEnvironmentTests {
 		assertThat(environment.acceptsProfiles("!p1"), is(false));
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void acceptsProfiles_withInvalidNotOperator() {
 		environment.acceptsProfiles("p1", "!");
+	}
+
+	@Test
+	public void acceptsProfiles_withProfileExpression() {
+		assertThat(environment.acceptsProfiles(Profiles.of("p1 & p2")), is(false));
+		environment.addActiveProfile("p1");
+		assertThat(environment.acceptsProfiles(Profiles.of("p1 & p2")), is(false));
+		environment.addActiveProfile("p2");
+		assertThat(environment.acceptsProfiles(Profiles.of("p1 & p2")), is(true));
 	}
 
 	@Test
@@ -334,10 +354,32 @@ public class StandardEnvironmentTests {
 		try {
 			env.addActiveProfile("invalid-profile");
 			fail("expected validation exception");
-		} catch (IllegalArgumentException ex) {
+		}
+		catch (IllegalArgumentException ex) {
 			assertThat(ex.getMessage(),
 					equalTo("Invalid profile [invalid-profile]: must not contain dash character"));
 		}
+	}
+
+	@Test
+	public void suppressGetenvAccessThroughSystemProperty() {
+		System.setProperty("spring.getenv.ignore", "true");
+		assertTrue(environment.getSystemEnvironment().isEmpty());
+		System.clearProperty("spring.getenv.ignore");
+	}
+
+	@Test
+	public void suppressGetenvAccessThroughSpringProperty() {
+		SpringProperties.setProperty("spring.getenv.ignore", "true");
+		assertTrue(environment.getSystemEnvironment().isEmpty());
+		SpringProperties.setProperty("spring.getenv.ignore", null);
+	}
+
+	@Test
+	public void suppressGetenvAccessThroughSpringFlag() {
+		SpringProperties.setFlag("spring.getenv.ignore");
+		assertTrue(environment.getSystemEnvironment().isEmpty());
+		SpringProperties.setProperty("spring.getenv.ignore", null);
 	}
 
 	@Test
@@ -363,15 +405,15 @@ public class StandardEnvironmentTests {
 		SecurityManager securityManager = new SecurityManager() {
 			@Override
 			public void checkPropertiesAccess() {
-				// see http://download.oracle.com/javase/1.5.0/docs/api/java/lang/System.html#getProperties()
+				// see https://download.oracle.com/javase/1.5.0/docs/api/java/lang/System.html#getProperties()
 				throw new AccessControlException("Accessing the system properties is disallowed");
 			}
 			@Override
 			public void checkPropertyAccess(String key) {
-				// see http://download.oracle.com/javase/1.5.0/docs/api/java/lang/System.html#getProperty(java.lang.String)
+				// see https://download.oracle.com/javase/1.5.0/docs/api/java/lang/System.html#getProperty(java.lang.String)
 				if (DISALLOWED_PROPERTY_NAME.equals(key)) {
 					throw new AccessControlException(
-							format("Accessing the system property [%s] is disallowed", DISALLOWED_PROPERTY_NAME));
+							String.format("Accessing the system property [%s] is disallowed", DISALLOWED_PROPERTY_NAME));
 				}
 			}
 			@Override
@@ -402,7 +444,8 @@ public class StandardEnvironmentTests {
 			try {
 				systemProperties.get(NON_STRING_PROPERTY_NAME);
 				fail("Expected IllegalArgumentException when searching with non-string key against ReadOnlySystemAttributesMap");
-			} catch (IllegalArgumentException ex) {
+			}
+			catch (IllegalArgumentException ex) {
 				// expected
 			}
 		}
@@ -429,14 +472,14 @@ public class StandardEnvironmentTests {
 		SecurityManager securityManager = new SecurityManager() {
 			@Override
 			public void checkPermission(Permission perm) {
-				//see http://download.oracle.com/javase/1.5.0/docs/api/java/lang/System.html#getenv()
+				//see https://download.oracle.com/javase/1.5.0/docs/api/java/lang/System.html#getenv()
 				if ("getenv.*".equals(perm.getName())) {
 					throw new AccessControlException("Accessing the system environment is disallowed");
 				}
-				//see http://download.oracle.com/javase/1.5.0/docs/api/java/lang/System.html#getenv(java.lang.String)
+				//see https://download.oracle.com/javase/1.5.0/docs/api/java/lang/System.html#getenv(java.lang.String)
 				if (("getenv."+DISALLOWED_PROPERTY_NAME).equals(perm.getName())) {
 					throw new AccessControlException(
-							format("Accessing the system environment variable [%s] is disallowed", DISALLOWED_PROPERTY_NAME));
+							String.format("Accessing the system environment variable [%s] is disallowed", DISALLOWED_PROPERTY_NAME));
 				}
 			}
 		};
@@ -455,6 +498,7 @@ public class StandardEnvironmentTests {
 		getModifiableSystemEnvironment().remove(DISALLOWED_PROPERTY_NAME);
 	}
 
+
 	@SuppressWarnings("unchecked")
 	public static Map<String, String> getModifiableSystemEnvironment() {
 		// for os x / linux
@@ -469,7 +513,8 @@ public class StandardEnvironmentTests {
 					if (obj != null && obj.getClass().getName().equals("java.lang.ProcessEnvironment$StringEnvironment")) {
 						return (Map<String, String>) obj;
 					}
-				} catch (Exception ex) {
+				}
+				catch (Exception ex) {
 					throw new RuntimeException(ex);
 				}
 			}
@@ -479,8 +524,9 @@ public class StandardEnvironmentTests {
 		Class<?> processEnvironmentClass;
 		try {
 			processEnvironmentClass = Class.forName("java.lang.ProcessEnvironment");
-		} catch (Exception e) {
-			throw new RuntimeException(e);
+		}
+		catch (Exception ex) {
+			throw new IllegalStateException(ex);
 		}
 
 		try {
@@ -488,10 +534,12 @@ public class StandardEnvironmentTests {
 			theCaseInsensitiveEnvironmentField.setAccessible(true);
 			Object obj = theCaseInsensitiveEnvironmentField.get(null);
 			return (Map<String, String>) obj;
-		} catch (NoSuchFieldException e) {
+		}
+		catch (NoSuchFieldException ex) {
 			// do nothing
-		} catch (Exception e) {
-			throw new RuntimeException(e);
+		}
+		catch (Exception ex) {
+			throw new IllegalStateException(ex);
 		}
 
 		try {
@@ -499,12 +547,15 @@ public class StandardEnvironmentTests {
 			theEnvironmentField.setAccessible(true);
 			Object obj = theEnvironmentField.get(null);
 			return (Map<String, String>) obj;
-		} catch (NoSuchFieldException e) {
+		}
+		catch (NoSuchFieldException ex) {
 			// do nothing
-		} catch (Exception e) {
-			throw new RuntimeException(e);
+		}
+		catch (Exception ex) {
+			throw new IllegalStateException(ex);
 		}
 
 		throw new IllegalStateException();
 	}
+
 }

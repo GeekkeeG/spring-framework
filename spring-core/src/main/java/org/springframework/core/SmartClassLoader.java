@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -38,6 +38,6 @@ public interface SmartClassLoader {
 	 * @return whether the class should be expected to appear in a reloaded
 	 * version (with a different {@code Class} object) later on
 	 */
-	boolean isClassReloadable(Class clazz);
+	boolean isClassReloadable(Class<?> clazz);
 
 }

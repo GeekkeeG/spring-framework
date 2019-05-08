@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2002-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,6 +20,7 @@ import java.io.Serializable;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.junit.Test;
+
 import org.springframework.aop.IntroductionAdvisor;
 import org.springframework.aop.IntroductionInterceptor;
 import org.springframework.aop.framework.ProxyFactory;
@@ -34,6 +35,7 @@ import org.springframework.tests.sample.beans.TestBean;
 import org.springframework.util.SerializationTestUtils;
 
 import static org.hamcrest.Matchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.*;
 
@@ -42,9 +44,9 @@ import static org.mockito.BDDMockito.*;
  * @author Chris Beams
  * @since 13.05.2003
  */
-public final class DelegatingIntroductionInterceptorTests {
+public class DelegatingIntroductionInterceptorTests {
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void testNullTarget() throws Exception {
 		// Shouldn't accept null target
 		new DelegatingIntroductionInterceptor(null);
@@ -156,7 +158,7 @@ public final class DelegatingIntroductionInterceptorTests {
 		TimeStamped ts = (TimeStamped) pf.getProxy();
 
 		assertThat(ts, instanceOf(TimeStamped.class));
-		// Shoulnd't proxy framework interfaces
+		// Shouldn't proxy framework interfaces
 		assertTrue(!(ts instanceof MethodInterceptor));
 		assertTrue(!(ts instanceof IntroductionInterceptor));
 

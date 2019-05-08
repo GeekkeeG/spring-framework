@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,97 +16,88 @@
 
 package org.springframework.test.context;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.util.Assert;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.lang.Nullable;
+import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 
 /**
- * {@code CacheAwareContextLoaderDelegate} loads application contexts from
- * {@link MergedContextConfiguration} by delegating to the
- * {@link ContextLoader} configured in the {@code MergedContextConfiguration}
- * and interacting transparently with the {@link ContextCache} behind the scenes.
+ * A {@code CacheAwareContextLoaderDelegate} is responsible for {@linkplain
+ * #loadContext loading} and {@linkplain #closeContext closing} application
+ * contexts, interacting transparently with a
+ * {@link org.springframework.test.context.cache.ContextCache ContextCache}
+ * behind the scenes.
  *
- * <p>Note: {@code CacheAwareContextLoaderDelegate} does not implement the
+ * <p>Note: {@code CacheAwareContextLoaderDelegate} does not extend the
  * {@link ContextLoader} or {@link SmartContextLoader} interface.
  *
  * @author Sam Brannen
  * @since 3.2.2
  */
-public class CacheAwareContextLoaderDelegate {
+public interface CacheAwareContextLoaderDelegate {
 
-	private static final Log logger = LogFactory.getLog(CacheAwareContextLoaderDelegate.class);
-
-	private final ContextCache contextCache;
-
-
-	CacheAwareContextLoaderDelegate(ContextCache contextCache) {
-		Assert.notNull(contextCache, "ContextCache must not be null");
-		this.contextCache = contextCache;
+	/**
+	 * Determine if the {@linkplain ApplicationContext application context} for
+	 * the supplied {@link MergedContextConfiguration} has been loaded (i.e.,
+	 * is present in the {@code ContextCache}).
+	 * <p>Implementations of this method <strong>must not</strong> load the
+	 * application context as a side effect. In addition, implementations of
+	 * this method should not log the cache statistics via
+	 * {@link org.springframework.test.context.cache.ContextCache#logStatistics()}.
+	 * <p>The default implementation of this method always returns {@code false}.
+	 * Custom {@code CacheAwareContextLoaderDelegate} implementations are
+	 * therefore highly encouraged to override this method with a more meaningful
+	 * implementation. Note that the standard {@code CacheAwareContextLoaderDelegate}
+	 * implementation in Spring overrides this method appropriately.
+	 * @param mergedContextConfiguration the merged context configuration used
+	 * to load the application context; never {@code null}
+	 * @return {@code true} if the the application context has been loaded
+	 * @since 5.2
+	 * @see #loadContext
+	 * @see #closeContext
+	 */
+	default boolean isContextLoaded(MergedContextConfiguration mergedContextConfiguration) {
+		return false;
 	}
 
 	/**
-	 * Load the {@code ApplicationContext} for the supplied merged context
-	 * configuration. Supports both the {@link SmartContextLoader} and
-	 * {@link ContextLoader} SPIs.
-	 * @throws Exception if an error occurs while loading the application context
+	 * Load the {@linkplain ApplicationContext application context} for the supplied
+	 * {@link MergedContextConfiguration} by delegating to the {@link ContextLoader}
+	 * configured in the given {@code MergedContextConfiguration}.
+	 * <p>If the context is present in the {@code ContextCache} it will simply
+	 * be returned; otherwise, it will be loaded, stored in the cache, and returned.
+	 * <p>The cache statistics should be logged by invoking
+	 * {@link org.springframework.test.context.cache.ContextCache#logStatistics()}.
+	 * @param mergedContextConfiguration the merged context configuration to use
+	 * to load the application context; never {@code null}
+	 * @return the application context (never {@code null})
+	 * @throws IllegalStateException if an error occurs while retrieving or loading
+	 * the application context
+	 * @see #isContextLoaded
+	 * @see #closeContext
 	 */
-	private ApplicationContext loadContextInternal(MergedContextConfiguration mergedContextConfiguration)
-			throws Exception {
-		ContextLoader contextLoader = mergedContextConfiguration.getContextLoader();
-		Assert.notNull(contextLoader, "Cannot load an ApplicationContext with a NULL 'contextLoader'. "
-				+ "Consider annotating your test class with @ContextConfiguration or @ContextHierarchy.");
-
-		ApplicationContext applicationContext;
-
-		if (contextLoader instanceof SmartContextLoader) {
-			SmartContextLoader smartContextLoader = (SmartContextLoader) contextLoader;
-			applicationContext = smartContextLoader.loadContext(mergedContextConfiguration);
-		}
-		else {
-			String[] locations = mergedContextConfiguration.getLocations();
-			Assert.notNull(locations, "Cannot load an ApplicationContext with a NULL 'locations' array. "
-					+ "Consider annotating your test class with @ContextConfiguration or @ContextHierarchy.");
-			applicationContext = contextLoader.loadContext(locations);
-		}
-
-		return applicationContext;
-	}
+	ApplicationContext loadContext(MergedContextConfiguration mergedContextConfiguration);
 
 	/**
-	 * Load the {@link ApplicationContext application context} for the supplied
-	 * merged context configuration.
-	 *
-	 * <p>If the context is present in the cache it will simply be returned;
-	 * otherwise, it will be loaded, stored in the cache, and returned.
-	 * @return the application context
-	 * @throws IllegalStateException if an error occurs while retrieving or
-	 * loading the application context
+	 * Remove the {@linkplain ApplicationContext application context} for the
+	 * supplied {@link MergedContextConfiguration} from the {@code ContextCache}
+	 * and {@linkplain ConfigurableApplicationContext#close() close} it if it is
+	 * an instance of {@link ConfigurableApplicationContext}.
+	 * <p>The semantics of the supplied {@code HierarchyMode} must be honored when
+	 * removing the context from the cache. See the Javadoc for {@link HierarchyMode}
+	 * for details.
+	 * <p>Generally speaking, this method should only be called if the state of
+	 * a singleton bean has been changed (potentially affecting future interaction
+	 * with the context) or if the context needs to be prematurely removed from
+	 * the cache.
+	 * @param mergedContextConfiguration the merged context configuration for the
+	 * application context to close; never {@code null}
+	 * @param hierarchyMode the hierarchy mode; may be {@code null} if the context
+	 * is not part of a hierarchy
+	 * @since 4.1
+	 * @see #isContextLoaded
+	 * @see #loadContext
 	 */
-	public ApplicationContext loadContext(MergedContextConfiguration mergedContextConfiguration) {
-		synchronized (contextCache) {
-			ApplicationContext context = contextCache.get(mergedContextConfiguration);
-			if (context == null) {
-				try {
-					context = loadContextInternal(mergedContextConfiguration);
-					if (logger.isDebugEnabled()) {
-						logger.debug(String.format("Storing ApplicationContext in cache under key [%s].",
-							mergedContextConfiguration));
-					}
-					contextCache.put(mergedContextConfiguration, context);
-				}
-				catch (Exception ex) {
-					throw new IllegalStateException("Failed to load ApplicationContext", ex);
-				}
-			}
-			else {
-				if (logger.isDebugEnabled()) {
-					logger.debug(String.format("Retrieved ApplicationContext from cache with key [%s].",
-						mergedContextConfiguration));
-				}
-			}
-			return context;
-		}
-	}
+	void closeContext(MergedContextConfiguration mergedContextConfiguration, @Nullable HierarchyMode hierarchyMode);
 
 }

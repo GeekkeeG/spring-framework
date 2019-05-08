@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2002-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,13 +16,8 @@
 
 package org.springframework.aop.framework;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
+import java.util.ArrayList;
+import java.util.List;
 import javax.accessibility.Accessible;
 import javax.swing.JFrame;
 import javax.swing.RootPaneContainer;
@@ -31,18 +26,25 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Ignore;
 import org.junit.Test;
+
 import org.springframework.aop.Advisor;
 import org.springframework.aop.interceptor.DebugInterceptor;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.aop.support.DefaultIntroductionAdvisor;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
 import org.springframework.aop.support.DelegatingIntroductionInterceptor;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
+import org.springframework.core.annotation.Order;
 import org.springframework.tests.TimeStamped;
 import org.springframework.tests.aop.advice.CountingBeforeAdvice;
 import org.springframework.tests.aop.interceptor.NopInterceptor;
 import org.springframework.tests.sample.beans.IOther;
 import org.springframework.tests.sample.beans.ITestBean;
 import org.springframework.tests.sample.beans.TestBean;
+
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.*;
 
 /**
  * Also tests AdvisedSupport and ProxyCreatorSupport superclasses.
@@ -52,7 +54,7 @@ import org.springframework.tests.sample.beans.TestBean;
  * @author Chris Beams
  * @since 14.05.2003
  */
-public final class ProxyFactoryTests {
+public class ProxyFactoryTests {
 
 	@Test
 	public void testIndexOfMethods() {
@@ -215,7 +217,7 @@ public final class ProxyFactoryTests {
 		TimeStamped ts = (TimeStamped) factory.getProxy();
 		assertTrue(ts.getTimeStamp() == t);
 		// Shouldn't fail;
-		 ((IOther) ts).absquatulate();
+		((IOther) ts).absquatulate();
 	}
 
 	@Test
@@ -331,13 +333,51 @@ public final class ProxyFactoryTests {
 	}
 
 	@Test
-	@Ignore("Not implemented yet, see http://jira.springframework.org/browse/SPR-5708")
+	@Ignore("Not implemented yet, see https://jira.springframework.org/browse/SPR-5708")
 	public void testExclusionOfNonPublicInterfaces() {
 		JFrame frame = new JFrame();
 		ProxyFactory proxyFactory = new ProxyFactory(frame);
 		Object proxy = proxyFactory.getProxy();
 		assertTrue(proxy instanceof RootPaneContainer);
 		assertTrue(proxy instanceof Accessible);
+	}
+
+	@Test
+	public void testInterfaceProxiesCanBeOrderedThroughAnnotations() {
+		Object proxy1 = new ProxyFactory(new A()).getProxy();
+		Object proxy2 = new ProxyFactory(new B()).getProxy();
+		List<Object> list = new ArrayList<>(2);
+		list.add(proxy1);
+		list.add(proxy2);
+		AnnotationAwareOrderComparator.sort(list);
+		assertSame(proxy2, list.get(0));
+		assertSame(proxy1, list.get(1));
+	}
+
+	@Test
+	public void testTargetClassProxiesCanBeOrderedThroughAnnotations() {
+		ProxyFactory pf1 = new ProxyFactory(new A());
+		pf1.setProxyTargetClass(true);
+		ProxyFactory pf2 = new ProxyFactory(new B());
+		pf2.setProxyTargetClass(true);
+		Object proxy1 = pf1.getProxy();
+		Object proxy2 = pf2.getProxy();
+		List<Object> list = new ArrayList<>(2);
+		list.add(proxy1);
+		list.add(proxy2);
+		AnnotationAwareOrderComparator.sort(list);
+		assertSame(proxy2, list.get(0));
+		assertSame(proxy1, list.get(1));
+	}
+
+	@Test
+	public void testInterceptorWithoutJoinpoint() {
+		final TestBean target = new TestBean("tb");
+		ITestBean proxy = ProxyFactory.getProxy(ITestBean.class, (MethodInterceptor) invocation -> {
+			assertNull(invocation.getThis());
+			return invocation.getMethod().invoke(target, invocation.getArguments());
+		});
+		assertEquals("tb", proxy.getName());
 	}
 
 
@@ -361,6 +401,24 @@ public final class ProxyFactoryTests {
 		@Override
 		public long getTimeStamp() {
 			return ts;
+		}
+	}
+
+
+	@Order(2)
+	public static class A implements Runnable {
+
+		@Override
+		public void run() {
+		}
+	}
+
+
+	@Order(1)
+	public static class B implements Runnable{
+
+		@Override
+		public void run() {
 		}
 	}
 

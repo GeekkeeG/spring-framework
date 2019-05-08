@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,7 +26,7 @@ import org.springframework.beans.BeanWrapper;
 
 /**
  * Default implementation of the {@link JmsActivationSpecFactory} interface.
- * Supports the standard JMS properties as defined by the JMS 1.5 specification,
+ * Supports the standard JMS properties as defined by the JCA 1.5 specification,
  * as well as Spring's extended "maxConcurrency" and "prefetchSize" settings
  * through autodetection of well-known vendor-specific provider properties.
  *
@@ -62,7 +62,7 @@ public class DefaultJmsActivationSpecFactory extends StandardJmsActivationSpecFa
 	private static final String ACTIVATION_SPEC_IMPL_SUFFIX = "ActivationSpecImpl";
 
 
-	/** Logger available to subclasses */
+	/** Logger available to subclasses. */
 	protected final Log logger = LogFactory.getLog(getClass());
 
 
@@ -73,7 +73,7 @@ public class DefaultJmsActivationSpecFactory extends StandardJmsActivationSpecFa
 	 * "ActivationSpecImpl" in the same package as the ResourceAdapter class.
 	 */
 	@Override
-	protected Class determineActivationSpecClass(ResourceAdapter adapter) {
+	protected Class<?> determineActivationSpecClass(ResourceAdapter adapter) {
 		String adapterClassName = adapter.getClass().getName();
 
 		if (adapterClassName.endsWith(RESOURCE_ADAPTER_SUFFIX)) {
@@ -85,7 +85,9 @@ public class DefaultJmsActivationSpecFactory extends StandardJmsActivationSpecFa
 				return adapter.getClass().getClassLoader().loadClass(specClassName);
 			}
 			catch (ClassNotFoundException ex) {
-				logger.debug("No default <Provider>ActivationSpec class found: " + specClassName);
+				if (logger.isDebugEnabled()) {
+					logger.debug("No default <Provider>ActivationSpec class found: " + specClassName);
+				}
 			}
 		}
 
@@ -98,7 +100,9 @@ public class DefaultJmsActivationSpecFactory extends StandardJmsActivationSpecFa
 				return adapter.getClass().getClassLoader().loadClass(specClassName);
 			}
 			catch (ClassNotFoundException ex) {
-				logger.debug("No default <Provider>ActivationSpecImpl class found: " + specClassName);
+				if (logger.isDebugEnabled()) {
+					logger.debug("No default <Provider>ActivationSpecImpl class found: " + specClassName);
+				}
 			}
 		}
 
@@ -109,7 +113,9 @@ public class DefaultJmsActivationSpecFactory extends StandardJmsActivationSpecFa
 			return adapter.getClass().getClassLoader().loadClass(specClassName);
 		}
 		catch (ClassNotFoundException ex) {
-			logger.debug("No default ActivationSpecImpl class found in provider package: " + specClassName);
+			if (logger.isDebugEnabled()) {
+				logger.debug("No default ActivationSpecImpl class found in provider package: " + specClassName);
+			}
 		}
 
 		// ActivationSpecImpl class in "inbound" subpackage (WebSphere MQ 6.0.2.1)
@@ -118,7 +124,9 @@ public class DefaultJmsActivationSpecFactory extends StandardJmsActivationSpecFa
 			return adapter.getClass().getClassLoader().loadClass(specClassName);
 		}
 		catch (ClassNotFoundException ex) {
-			logger.debug("No default ActivationSpecImpl class found in inbound subpackage: " + specClassName);
+			if (logger.isDebugEnabled()) {
+				logger.debug("No default ActivationSpecImpl class found in inbound subpackage: " + specClassName);
+			}
 		}
 
 		throw new IllegalStateException("No ActivationSpec class defined - " +
@@ -158,7 +166,7 @@ public class DefaultJmsActivationSpecFactory extends StandardJmsActivationSpecFa
 				// JORAM
 				bw.setPropertyValue("maxMessages", Integer.toString(config.getPrefetchSize()));
 			}
-			else if(bw.isWritableProperty("maxBatchSize")){
+			else if (bw.isWritableProperty("maxBatchSize")){
 				// WebSphere
 				bw.setPropertyValue("maxBatchSize", Integer.toString(config.getPrefetchSize()));
 			}

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,19 +16,19 @@
 
 package org.springframework.test.context.junit4.spr3896;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import org.junit.Test;
-import org.springframework.tests.sample.beans.Pet;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.tests.sample.beans.Pet;
+
+import static org.junit.Assert.*;
 
 /**
  * JUnit 4 based integration test for verifying support for the
  * {@link ContextConfiguration#inheritLocations() inheritLocations} flag of
  * {@link ContextConfiguration @ContextConfiguration} indirectly proposed in <a
- * href="http://opensource.atlassian.com/projects/spring/browse/SPR-3896"
+ * href="https://opensource.atlassian.com/projects/spring/browse/SPR-3896"
  * target="_blank">SPR-3896</a>.
  *
  * @author Sam Brannen

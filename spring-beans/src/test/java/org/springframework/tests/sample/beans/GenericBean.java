@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2010 the original author or authors.
+ * Copyright 2002-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,6 +19,8 @@ package org.springframework.tests.sample.beans;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -66,6 +68,10 @@ public class GenericBean<T> {
 	private CustomEnum[] customEnumArray;
 
 	private Set<CustomEnum> customEnumSet;
+
+	private EnumSet<CustomEnum> standardEnumSet;
+
+	private EnumMap<CustomEnum, Integer> standardEnumMap;
 
 	private T genericProperty;
 
@@ -261,10 +267,26 @@ public class GenericBean<T> {
 	}
 
 	public void setCustomEnumSetMismatch(Set<String> customEnumSet) {
-		this.customEnumSet = new HashSet<CustomEnum>(customEnumSet.size());
+		this.customEnumSet = new HashSet<>(customEnumSet.size());
 		for (Iterator<String> iterator = customEnumSet.iterator(); iterator.hasNext(); ) {
 			this.customEnumSet.add(CustomEnum.valueOf(iterator.next()));
 		}
+	}
+
+	public EnumSet<CustomEnum> getStandardEnumSet() {
+		return standardEnumSet;
+	}
+
+	public void setStandardEnumSet(EnumSet<CustomEnum> standardEnumSet) {
+		this.standardEnumSet = standardEnumSet;
+	}
+
+	public EnumMap<CustomEnum, Integer> getStandardEnumMap() {
+		return standardEnumMap;
+	}
+
+	public void setStandardEnumMap(EnumMap<CustomEnum, Integer> standardEnumMap) {
+		this.standardEnumMap = standardEnumMap;
 	}
 
 	public static GenericBean createInstance(Set<Integer> integerSet) {

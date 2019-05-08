@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,7 +25,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.hamcrest.Matchers;
-
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -33,7 +32,8 @@ import org.springframework.tests.Assume;
 import org.springframework.tests.TestGroup;
 import org.springframework.tests.sample.objects.TestObject;
 
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 
 /**
@@ -67,8 +67,8 @@ public class ReflectionUtilsTests {
 
 	@Test
 	public void setField() {
-		final TestObjectSubclassWithNewField testBean = new TestObjectSubclassWithNewField();
-		final Field field = ReflectionUtils.findField(TestObjectSubclassWithNewField.class, "name", String.class);
+		TestObjectSubclassWithNewField testBean = new TestObjectSubclassWithNewField();
+		Field field = ReflectionUtils.findField(TestObjectSubclassWithNewField.class, "name", String.class);
 
 		ReflectionUtils.makeAccessible(field);
 
@@ -80,13 +80,6 @@ public class ReflectionUtilsTests {
 		assertNull(testBean.getName());
 	}
 
-	@Test(expected = IllegalStateException.class)
-	public void setFieldIllegal() {
-		final TestObjectSubclassWithNewField testBean = new TestObjectSubclassWithNewField();
-		final Field field = ReflectionUtils.findField(TestObjectSubclassWithNewField.class, "name", String.class);
-		ReflectionUtils.setField(field, testBean, "FooBar");
-	}
-
 	@Test
 	public void invokeMethod() throws Exception {
 		String rob = "Rob Harrop";
@@ -94,66 +87,51 @@ public class ReflectionUtilsTests {
 		TestObject bean = new TestObject();
 		bean.setName(rob);
 
-		Method getName = TestObject.class.getMethod("getName", (Class[]) null);
-		Method setName = TestObject.class.getMethod("setName", new Class[] { String.class });
+		Method getName = TestObject.class.getMethod("getName");
+		Method setName = TestObject.class.getMethod("setName", String.class);
 
 		Object name = ReflectionUtils.invokeMethod(getName, bean);
 		assertEquals("Incorrect name returned", rob, name);
 
 		String juergen = "Juergen Hoeller";
-		ReflectionUtils.invokeMethod(setName, bean, new Object[] { juergen });
+		ReflectionUtils.invokeMethod(setName, bean, juergen);
 		assertEquals("Incorrect name set", juergen, bean.getName());
 	}
 
 	@Test
 	public void declaresException() throws Exception {
-		Method remoteExMethod = A.class.getDeclaredMethod("foo", new Class[] { Integer.class });
+		Method remoteExMethod = A.class.getDeclaredMethod("foo", Integer.class);
 		assertTrue(ReflectionUtils.declaresException(remoteExMethod, RemoteException.class));
 		assertTrue(ReflectionUtils.declaresException(remoteExMethod, ConnectException.class));
 		assertFalse(ReflectionUtils.declaresException(remoteExMethod, NoSuchMethodException.class));
 		assertFalse(ReflectionUtils.declaresException(remoteExMethod, Exception.class));
 
-		Method illegalExMethod = B.class.getDeclaredMethod("bar", new Class[] { String.class });
+		Method illegalExMethod = B.class.getDeclaredMethod("bar", String.class);
 		assertTrue(ReflectionUtils.declaresException(illegalExMethod, IllegalArgumentException.class));
 		assertTrue(ReflectionUtils.declaresException(illegalExMethod, NumberFormatException.class));
 		assertFalse(ReflectionUtils.declaresException(illegalExMethod, IllegalStateException.class));
 		assertFalse(ReflectionUtils.declaresException(illegalExMethod, Exception.class));
 	}
 
-	@Test
+	@Test(expected = IllegalArgumentException.class)
 	public void copySrcToDestinationOfIncorrectClass() {
 		TestObject src = new TestObject();
 		String dest = new String();
-		try {
-			ReflectionUtils.shallowCopyFieldState(src, dest);
-			fail();
-		} catch (IllegalArgumentException ex) {
-			// Ok
-		}
+		ReflectionUtils.shallowCopyFieldState(src, dest);
 	}
 
-	@Test
+	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullSrc() {
 		TestObject src = null;
 		String dest = new String();
-		try {
-			ReflectionUtils.shallowCopyFieldState(src, dest);
-			fail();
-		} catch (IllegalArgumentException ex) {
-			// Ok
-		}
+		ReflectionUtils.shallowCopyFieldState(src, dest);
 	}
 
-	@Test
+	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullDest() {
 		TestObject src = new TestObject();
 		String dest = null;
-		try {
-			ReflectionUtils.shallowCopyFieldState(src, dest);
-			fail();
-		} catch (IllegalArgumentException ex) {
-			// Ok
-		}
+		ReflectionUtils.shallowCopyFieldState(src, dest);
 	}
 
 	@Test
@@ -325,13 +303,13 @@ public class ReflectionUtilsTests {
 		class Parent {
 			@SuppressWarnings("unused")
 			public Number m1() {
-				return new Integer(42);
+				return Integer.valueOf(42);
 			}
 		}
 		class Leaf extends Parent {
 			@Override
 			public Integer m1() {
-				return new Integer(42);
+				return Integer.valueOf(42);
 			}
 		}
 		int m1MethodCount = 0;
@@ -383,11 +361,18 @@ public class ReflectionUtilsTests {
 		assertThat(totalMs, Matchers.lessThan(10L));
 	}
 
+	@Test
+	public void getDecalredMethodsReturnsCopy() {
+		Method[] m1 = ReflectionUtils.getDeclaredMethods(A.class);
+		Method[] m2 = ReflectionUtils.getDeclaredMethods(A.class);
+		assertThat(m1, not(sameInstance(m2)));
+	}
+
 	private static class ListSavingMethodCallback implements ReflectionUtils.MethodCallback {
 
-		private List<String> methodNames = new LinkedList<String>();
+		private List<String> methodNames = new LinkedList<>();
 
-		private List<Method> methods = new LinkedList<Method>();
+		private List<Method> methods = new LinkedList<>();
 
 		@Override
 		public void doWith(Method m) throws IllegalArgumentException, IllegalAccessException {

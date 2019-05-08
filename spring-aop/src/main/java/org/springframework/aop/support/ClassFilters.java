@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,8 +23,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 /**
- * Static utility methods for composing
- * {@link org.springframework.aop.ClassFilter ClassFilters}.
+ * Static utility methods for composing {@link ClassFilter ClassFilters}.
  *
  * @author Rod Johnson
  * @author Rob Harrop
@@ -97,9 +96,9 @@ public abstract class ClassFilters {
 		}
 
 		@Override
-		public boolean matches(Class clazz) {
-			for (int i = 0; i < this.filters.length; i++) {
-				if (this.filters[i].matches(clazz)) {
+		public boolean matches(Class<?> clazz) {
+			for (ClassFilter filter : this.filters) {
+				if (filter.matches(clazz)) {
 					return true;
 				}
 			}
@@ -132,9 +131,9 @@ public abstract class ClassFilters {
 		}
 
 		@Override
-		public boolean matches(Class clazz) {
-			for (int i = 0; i < this.filters.length; i++) {
-				if (!this.filters[i].matches(clazz)) {
+		public boolean matches(Class<?> clazz) {
+			for (ClassFilter filter : this.filters) {
+				if (!filter.matches(clazz)) {
 					return false;
 				}
 			}

@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,9 +19,10 @@ package org.springframework.core.convert.converter;
 import org.springframework.core.convert.TypeDescriptor;
 
 /**
- * A {@link GenericConverter} that may conditionally execute based on attributes of the
- * {@code source} and {@code target} {@link TypeDescriptor}. See
- * {@link ConditionalConverter} for details.
+ * A {@link GenericConverter} that may conditionally execute based on attributes
+ * of the {@code source} and {@code target} {@link TypeDescriptor}.
+ *
+ * <p>See {@link ConditionalConverter} for details.
  *
  * @author Keith Donald
  * @author Phillip Webb
@@ -29,7 +30,6 @@ import org.springframework.core.convert.TypeDescriptor;
  * @see GenericConverter
  * @see ConditionalConverter
  */
-public interface ConditionalGenericConverter extends GenericConverter,
-		ConditionalConverter {
+public interface ConditionalGenericConverter extends GenericConverter, ConditionalConverter {
 
 }
