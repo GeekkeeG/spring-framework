@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2018 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import java.util.Optional;
 import com.fasterxml.jackson.annotation.JsonView;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.util.IllegalReferenceCountException;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
@@ -64,8 +63,11 @@ import org.springframework.mock.http.client.reactive.test.MockClientHttpResponse
 import org.springframework.mock.http.server.reactive.test.MockServerHttpRequest;
 import org.springframework.util.MultiValueMap;
 
-import static org.junit.Assert.*;
-import static org.springframework.http.codec.json.Jackson2CodecSupport.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.springframework.http.codec.json.Jackson2CodecSupport.JSON_VIEW_HINT;
 
 /**
  * @author Arjen Poutsma
@@ -434,9 +436,9 @@ public class BodyExtractorsTests {
 					assertTrue(throwable instanceof UnsupportedMediaTypeException);
 					try {
 						buffer.release();
-						Assert.fail("releasing the buffer should have failed");
-					} catch (IllegalReferenceCountException exc) {
-
+						fail("releasing the buffer should have failed");
+					}
+					catch (IllegalReferenceCountException exc) {
 					}
 					body.assertCancelled();
 				}).verify();

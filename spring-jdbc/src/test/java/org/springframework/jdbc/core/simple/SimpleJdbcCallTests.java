@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2015 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,11 +24,8 @@ import java.sql.SQLException;
 import java.sql.Types;
 import javax.sql.DataSource;
 
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.jdbc.BadSqlGrammarException;
@@ -36,10 +33,12 @@ import org.springframework.jdbc.core.SqlOutParameter;
 import org.springframework.jdbc.core.SqlParameter;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
-import static org.mockito.BDDMockito.*;
-import static org.springframework.tests.Matchers.*;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 /**
  * Tests for {@link SimpleJdbcCall}.
@@ -56,9 +55,6 @@ public class SimpleJdbcCallTests {
 	private DataSource dataSource;
 
 	private CallableStatement callableStatement;
-
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
 
 
 	@Before
@@ -83,10 +79,10 @@ public class SimpleJdbcCallTests {
 		given(callableStatement.execute()).willThrow(sqlException);
 		given(connection.prepareCall("{call " + NO_SUCH_PROC + "()}")).willReturn(callableStatement);
 		SimpleJdbcCall sproc = new SimpleJdbcCall(dataSource).withProcedureName(NO_SUCH_PROC);
-		thrown.expect(BadSqlGrammarException.class);
-		thrown.expect(exceptionCause(sameInstance(sqlException)));
 		try {
-			sproc.execute();
+			assertThatExceptionOfType(BadSqlGrammarException.class).isThrownBy(() ->
+					sproc.execute())
+				.withCause(sqlException);
 		}
 		finally {
 			verify(callableStatement).close();
@@ -99,8 +95,8 @@ public class SimpleJdbcCallTests {
 		final String MY_PROC = "my_proc";
 		SimpleJdbcCall sproc = new SimpleJdbcCall(dataSource).withProcedureName(MY_PROC);
 		// Shouldn't succeed in adding unnamed parameter
-		thrown.expect(InvalidDataAccessApiUsageException.class);
-		sproc.addDeclaredParameter(new SqlParameter(1));
+		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class).isThrownBy(() ->
+				sproc.addDeclaredParameter(new SqlParameter(1)));
 	}
 
 	@Test
@@ -235,7 +231,7 @@ public class SimpleJdbcCallTests {
 
 
 	private void verifyStatement(SimpleJdbcCall adder, String expected) {
-		Assert.assertEquals("Incorrect call statement", expected, adder.getCallString());
+		assertEquals("Incorrect call statement", expected, adder.getCallString());
 	}
 
 	private void initializeAddInvoiceWithoutMetaData(boolean isFunction) throws SQLException {

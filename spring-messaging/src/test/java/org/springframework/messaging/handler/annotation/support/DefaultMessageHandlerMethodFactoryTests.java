@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2018 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import java.util.Map;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TestName;
 
 import org.springframework.beans.factory.support.StaticListableBeanFactory;
@@ -47,7 +46,11 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 import org.springframework.validation.annotation.Validated;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Stephane Nicoll
@@ -58,9 +61,6 @@ public class DefaultMessageHandlerMethodFactoryTests {
 
 	@Rule
 	public final TestName name = new TestName();
-
-	@Rule
-	public final ExpectedException thrown = ExpectedException.none();
 
 
 	@Test
@@ -95,8 +95,8 @@ public class DefaultMessageHandlerMethodFactoryTests {
 		InvocableHandlerMethod invocableHandlerMethod =
 				createInvocableHandlerMethod(instance, "simpleString", String.class);
 
-		thrown.expect(MessageConversionException.class);
-		invocableHandlerMethod.invoke(MessageBuilder.withPayload(123).build());
+		assertThatExceptionOfType(MessageConversionException.class).isThrownBy(() ->
+				invocableHandlerMethod.invoke(MessageBuilder.withPayload(123).build()));
 	}
 
 	@Test
@@ -109,8 +109,8 @@ public class DefaultMessageHandlerMethodFactoryTests {
 		InvocableHandlerMethod invocableHandlerMethod =
 				createInvocableHandlerMethod(instance, "simpleString", String.class);
 
-		thrown.expect(MessageConversionException.class);
-		invocableHandlerMethod.invoke(MessageBuilder.withPayload(123).build());
+		assertThatExceptionOfType(MessageConversionException.class).isThrownBy(() ->
+				invocableHandlerMethod.invoke(MessageBuilder.withPayload(123).build()));
 	}
 
 	@Test
@@ -148,9 +148,8 @@ public class DefaultMessageHandlerMethodFactoryTests {
 		InvocableHandlerMethod invocableHandlerMethod2 =
 				createInvocableHandlerMethod(instance, "simpleString", String.class);
 
-		thrown.expect(MethodArgumentResolutionException.class);
-		thrown.expectMessage("No suitable resolver");
-		invocableHandlerMethod2.invoke(message);
+		assertThatExceptionOfType(MethodArgumentResolutionException.class).isThrownBy(() ->
+				invocableHandlerMethod2.invoke(message)).withMessageContaining("No suitable resolver");
 	}
 
 	@Test
@@ -184,8 +183,8 @@ public class DefaultMessageHandlerMethodFactoryTests {
 
 		InvocableHandlerMethod invocableHandlerMethod =
 				createInvocableHandlerMethod(instance, "payloadValidation", String.class);
-		thrown.expect(MethodArgumentNotValidException.class);
-		invocableHandlerMethod.invoke(MessageBuilder.withPayload("failure").build());
+		assertThatExceptionOfType(MethodArgumentNotValidException.class).isThrownBy(() ->
+				invocableHandlerMethod.invoke(MessageBuilder.withPayload("failure").build()));
 	}
 
 

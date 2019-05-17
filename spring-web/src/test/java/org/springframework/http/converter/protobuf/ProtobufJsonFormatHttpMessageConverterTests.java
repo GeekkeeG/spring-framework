@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2018 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.io.IOException;
 import com.google.protobuf.ExtensionRegistry;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
-import org.junit.Before;
 import org.junit.Test;
 
 import org.springframework.http.MediaType;
@@ -30,8 +29,13 @@ import org.springframework.http.MockHttpOutputMessage;
 import org.springframework.protobuf.Msg;
 import org.springframework.protobuf.SecondMsg;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 /**
  * Test suite for {@link ProtobufJsonFormatHttpMessageConverter}.
@@ -42,23 +46,12 @@ import static org.mockito.Mockito.*;
 @SuppressWarnings("deprecation")
 public class ProtobufJsonFormatHttpMessageConverterTests {
 
-	private ProtobufHttpMessageConverter converter;
+	private final ExtensionRegistryInitializer registryInitializer = mock(ExtensionRegistryInitializer.class);
 
-	private ExtensionRegistry extensionRegistry;
+	private final ProtobufHttpMessageConverter converter = new ProtobufJsonFormatHttpMessageConverter(
+			JsonFormat.parser(), JsonFormat.printer(), this.registryInitializer);
 
-	private ExtensionRegistryInitializer registryInitializer;
-
-	private Msg testMsg;
-
-
-	@Before
-	public void setup() {
-		this.registryInitializer = mock(ExtensionRegistryInitializer.class);
-		this.extensionRegistry = mock(ExtensionRegistry.class);
-		this.converter = new ProtobufJsonFormatHttpMessageConverter(
-				JsonFormat.parser(), JsonFormat.printer(), this.registryInitializer);
-		this.testMsg = Msg.newBuilder().setFoo("Foo").setBlah(SecondMsg.newBuilder().setBlah(123).build()).build();
-	}
+	private final Msg testMsg = Msg.newBuilder().setFoo("Foo").setBlah(SecondMsg.newBuilder().setBlah(123).build()).build();
 
 
 	@Test

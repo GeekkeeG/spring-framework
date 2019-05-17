@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2017 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,10 @@ import org.junit.Test;
 import org.springframework.cache.AbstractValueAdaptingCacheTests;
 import org.springframework.core.serializer.support.SerializationDelegate;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Costin Leau
@@ -97,10 +100,11 @@ public class ConcurrentMapCacheTests
 	public void testNonSerializableContent() {
 		ConcurrentMapCache serializeCache = createCacheWithStoreByValue();
 
-		this.thrown.expect(IllegalArgumentException.class);
-		this.thrown.expectMessage("Failed to serialize");
-		this.thrown.expectMessage(this.cache.getClass().getName());
-		serializeCache.put(createRandomKey(), this.cache);
+		assertThatIllegalArgumentException().isThrownBy(() ->
+				serializeCache.put(createRandomKey(), this.cache))
+			.withMessageContaining("Failed to serialize")
+			.withMessageContaining(this.cache.getClass().getName());
+
 	}
 
 	@Test
@@ -109,10 +113,10 @@ public class ConcurrentMapCacheTests
 
 		String key = createRandomKey();
 		this.nativeCache.put(key, "Some garbage");
-		this.thrown.expect(IllegalArgumentException.class);
-		this.thrown.expectMessage("Failed to deserialize");
-		this.thrown.expectMessage("Some garbage");
-		serializeCache.get(key);
+		assertThatIllegalArgumentException().isThrownBy(() ->
+				serializeCache.get(key))
+			.withMessageContaining("Failed to deserialize")
+			.withMessageContaining("Some garbage");
 	}
 
 

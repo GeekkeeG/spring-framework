@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2015 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,14 @@
 package org.springframework.jms.config;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import org.springframework.beans.factory.support.StaticListableBeanFactory;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Stephane Nicoll
@@ -37,10 +38,6 @@ public class JmsListenerEndpointRegistrarTests {
 	private final JmsListenerContainerTestFactory containerFactory = new JmsListenerContainerTestFactory();
 
 
-	@Rule
-	public final ExpectedException thrown = ExpectedException.none();
-
-
 	@Before
 	public void setup() {
 		this.registrar.setEndpointRegistry(this.registry);
@@ -50,14 +47,14 @@ public class JmsListenerEndpointRegistrarTests {
 
 	@Test
 	public void registerNullEndpoint() {
-		this.thrown.expect(IllegalArgumentException.class);
-		this.registrar.registerEndpoint(null, this.containerFactory);
+		assertThatIllegalArgumentException().isThrownBy(() ->
+				this.registrar.registerEndpoint(null, this.containerFactory));
 	}
 
 	@Test
 	public void registerNullEndpointId() {
-		this.thrown.expect(IllegalArgumentException.class);
-		this.registrar.registerEndpoint(new SimpleJmsListenerEndpoint(), this.containerFactory);
+		assertThatIllegalArgumentException().isThrownBy(() ->
+				this.registrar.registerEndpoint(new SimpleJmsListenerEndpoint(), this.containerFactory));
 	}
 
 	@Test
@@ -65,8 +62,8 @@ public class JmsListenerEndpointRegistrarTests {
 		SimpleJmsListenerEndpoint endpoint = new SimpleJmsListenerEndpoint();
 		endpoint.setId("");
 
-		this.thrown.expect(IllegalArgumentException.class);
-		this.registrar.registerEndpoint(endpoint, this.containerFactory);
+		assertThatIllegalArgumentException().isThrownBy(() ->
+				this.registrar.registerEndpoint(endpoint, this.containerFactory));
 	}
 
 	@Test
@@ -87,9 +84,9 @@ public class JmsListenerEndpointRegistrarTests {
 		endpoint.setId("some id");
 		this.registrar.registerEndpoint(endpoint, null);
 
-		this.thrown.expect(IllegalStateException.class);
-		this.thrown.expectMessage(endpoint.toString());
-		this.registrar.afterPropertiesSet();
+		assertThatIllegalStateException().isThrownBy(() ->
+				this.registrar.afterPropertiesSet())
+			.withMessageContaining(endpoint.toString());
 	}
 
 	@Test

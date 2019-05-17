@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2018 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,9 +32,7 @@ import javax.sql.DataSource;
 
 import org.junit.Before;
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.mockito.InOrder;
 
 import org.springframework.jdbc.Customer;
@@ -43,8 +41,17 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.core.SqlParameterValue;
 
-import static org.junit.Assert.*;
-import static org.mockito.BDDMockito.*;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 /**
  * @author Rick Evans
@@ -74,9 +81,6 @@ public class NamedParameterJdbcTemplateTests {
 
 	private static final String[] COLUMN_NAMES = new String[] {"id", "forename"};
 
-
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
 
 	private Connection connection;
 
@@ -112,14 +116,14 @@ public class NamedParameterJdbcTemplateTests {
 
 	@Test
 	public void testNullDataSourceProvidedToCtor() {
-		thrown.expect(IllegalArgumentException.class);
-		new NamedParameterJdbcTemplate((DataSource) null);
+		assertThatIllegalArgumentException().isThrownBy(() ->
+				new NamedParameterJdbcTemplate((DataSource) null));
 	}
 
 	@Test
 	public void testNullJdbcTemplateProvidedToCtor() {
-		thrown.expect(IllegalArgumentException.class);
-		new NamedParameterJdbcTemplate((JdbcOperations) null);
+		assertThatIllegalArgumentException().isThrownBy(() ->
+		new NamedParameterJdbcTemplate((JdbcOperations) null));
 	}
 
 	@Test

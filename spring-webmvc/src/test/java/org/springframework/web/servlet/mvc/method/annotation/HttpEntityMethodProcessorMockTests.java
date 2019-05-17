@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2018 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,9 +31,7 @@ import java.util.Date;
 
 import org.hamcrest.Matchers;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 
 import org.springframework.core.MethodParameter;
@@ -58,13 +56,28 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import static java.time.Instant.*;
-import static java.time.format.DateTimeFormatter.*;
+import static java.time.Instant.ofEpochMilli;
+import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.*;
-import static org.mockito.BDDMockito.*;
-import static org.springframework.http.MediaType.*;
-import static org.springframework.web.servlet.HandlerMapping.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM;
+import static org.springframework.http.MediaType.TEXT_PLAIN;
+import static org.springframework.web.servlet.HandlerMapping.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE;
 
 /**
  * Test fixture for {@link HttpEntityMethodProcessor} delegating to a mock
@@ -80,9 +93,6 @@ public class HttpEntityMethodProcessorMockTests {
 
 	private static final ZoneId GMT = ZoneId.of("GMT");
 
-
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
 
 	private HttpEntityMethodProcessor processor;
 
@@ -233,16 +243,16 @@ public class HttpEntityMethodProcessorMockTests {
 		given(stringHttpMessageConverter.getSupportedMediaTypes()).willReturn(Collections.singletonList(contentType));
 		given(stringHttpMessageConverter.canRead(String.class, contentType)).willReturn(false);
 
-		this.thrown.expect(HttpMediaTypeNotSupportedException.class);
-		processor.resolveArgument(paramHttpEntity, mavContainer, webRequest, null);
+		assertThatExceptionOfType(HttpMediaTypeNotSupportedException.class).isThrownBy(() ->
+				processor.resolveArgument(paramHttpEntity, mavContainer, webRequest, null));
 	}
 
 	@Test
 	public void shouldFailResolvingWhenContentTypeNotSupported() throws Exception {
 		servletRequest.setMethod("POST");
 		servletRequest.setContent("some content".getBytes(StandardCharsets.UTF_8));
-		this.thrown.expect(HttpMediaTypeNotSupportedException.class);
-		processor.resolveArgument(paramHttpEntity, mavContainer, webRequest, null);
+		assertThatExceptionOfType(HttpMediaTypeNotSupportedException.class).isThrownBy(() ->
+				processor.resolveArgument(paramHttpEntity, mavContainer, webRequest, null));
 	}
 
 	@Test
@@ -306,8 +316,8 @@ public class HttpEntityMethodProcessorMockTests {
 		given(stringHttpMessageConverter.getSupportedMediaTypes())
 				.willReturn(Collections.singletonList(TEXT_PLAIN));
 
-		this.thrown.expect(HttpMediaTypeNotAcceptableException.class);
-		processor.handleReturnValue(returnValue, returnTypeResponseEntity, mavContainer, webRequest);
+		assertThatExceptionOfType(HttpMediaTypeNotAcceptableException.class).isThrownBy(() ->
+				processor.handleReturnValue(returnValue, returnTypeResponseEntity, mavContainer, webRequest));
 	}
 
 	@Test
@@ -322,8 +332,8 @@ public class HttpEntityMethodProcessorMockTests {
 				.willReturn(Collections.singletonList(TEXT_PLAIN));
 		given(stringHttpMessageConverter.canWrite(String.class, accepted)).willReturn(false);
 
-		this.thrown.expect(HttpMediaTypeNotAcceptableException.class);
-		processor.handleReturnValue(returnValue, returnTypeResponseEntityProduces, mavContainer, webRequest);
+		assertThatExceptionOfType(HttpMediaTypeNotAcceptableException.class).isThrownBy(() ->
+				processor.handleReturnValue(returnValue, returnTypeResponseEntityProduces, mavContainer, webRequest));
 	}
 
 	@Test  // SPR-9142
@@ -331,8 +341,8 @@ public class HttpEntityMethodProcessorMockTests {
 		ResponseEntity<String> returnValue = new ResponseEntity<>("Body", HttpStatus.ACCEPTED);
 		servletRequest.addHeader("Accept", "01");
 
-		this.thrown.expect(HttpMediaTypeNotAcceptableException.class);
-		processor.handleReturnValue(returnValue, returnTypeResponseEntity, mavContainer, webRequest);
+		assertThatExceptionOfType(HttpMediaTypeNotAcceptableException.class).isThrownBy(() ->
+				processor.handleReturnValue(returnValue, returnTypeResponseEntity, mavContainer, webRequest));
 	}
 
 	@Test

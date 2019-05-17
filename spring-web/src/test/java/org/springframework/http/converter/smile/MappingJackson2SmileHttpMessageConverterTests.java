@@ -20,14 +20,16 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import static org.junit.Assert.*;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.MockHttpInputMessage;
 import org.springframework.http.MockHttpOutputMessage;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Jackson 2.x Smile converter tests.
@@ -38,9 +40,6 @@ public class MappingJackson2SmileHttpMessageConverterTests {
 
 	private final MappingJackson2SmileHttpMessageConverter converter = new MappingJackson2SmileHttpMessageConverter();
 	private final ObjectMapper mapper = new ObjectMapper(new SmileFactory());
-
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
 
 
 	@Test

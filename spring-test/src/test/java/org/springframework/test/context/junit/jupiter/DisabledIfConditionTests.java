@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2018 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 
 import org.hamcrest.Matcher;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ConditionEvaluationResult;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -31,12 +30,19 @@ import org.springframework.test.context.TestContextManager;
 import org.springframework.test.context.junit.SpringJUnitJupiterTestSuite;
 import org.springframework.util.ReflectionUtils;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.endsWith;
-import static org.hamcrest.MatcherAssert.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
 /**
  * Tests for {@link DisabledIfCondition} that verify actual condition evaluation
@@ -118,12 +124,12 @@ class DisabledIfConditionTests {
 		Class<?> testClass = SpringTestCase.class;
 		Method method = ReflectionUtils.findMethod(getClass(), methodName);
 		Store store = mock(Store.class);
-		when(store.getOrComputeIfAbsent(any(), any(), any())).thenReturn(new TestContextManager(testClass));
+		given(store.getOrComputeIfAbsent(any(), any(), any())).willReturn(new TestContextManager(testClass));
 
 		ExtensionContext extensionContext = mock(ExtensionContext.class);
-		when(extensionContext.getTestClass()).thenReturn(Optional.of(testClass));
-		when(extensionContext.getElement()).thenReturn(Optional.of(method));
-		when(extensionContext.getStore(any())).thenReturn(store);
+		given(extensionContext.getTestClass()).willReturn(Optional.of(testClass));
+		given(extensionContext.getElement()).willReturn(Optional.of(method));
+		given(extensionContext.getStore(any())).willReturn(store);
 		return extensionContext;
 	}
 

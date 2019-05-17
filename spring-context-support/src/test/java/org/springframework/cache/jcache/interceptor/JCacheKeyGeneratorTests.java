@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2014 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,10 +38,11 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 /**
- *
  * @author Stephane Nicoll
  */
 public class JCacheKeyGeneratorTests {
@@ -58,6 +59,7 @@ public class JCacheKeyGeneratorTests {
 		this.keyGenerator = context.getBean(TestKeyGenerator.class);
 		this.simpleService = context.getBean(SimpleService.class);
 		this.cache = context.getBean(CacheManager.class).getCache("test");
+		context.close();
 	}
 
 	@Test

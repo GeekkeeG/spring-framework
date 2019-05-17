@@ -19,11 +19,12 @@ package org.springframework.core.io.support;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for {@link SpringFactoriesLoader}.
@@ -33,9 +34,6 @@ import static org.junit.Assert.*;
  * @author Sam Brannen
  */
 public class SpringFactoriesLoaderTests {
-
-	@Rule
-	public final ExpectedException exception = ExpectedException.none();
 
 	@Test
 	public void loadFactoriesInCorrectOrder() {
@@ -55,10 +53,10 @@ public class SpringFactoriesLoaderTests {
 
 	@Test
 	public void attemptToLoadFactoryOfIncompatibleType() {
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("Unable to instantiate factory class [org.springframework.core.io.support.MyDummyFactory1] for factory type [java.lang.String]");
-
-		SpringFactoriesLoader.loadFactories(String.class, null);
+		assertThatIllegalArgumentException().isThrownBy(() ->
+				SpringFactoriesLoader.loadFactories(String.class, null))
+			.withMessageContaining("Unable to instantiate factory class "
+					+ "[org.springframework.core.io.support.MyDummyFactory1] for factory type [java.lang.String]");
 	}
 
 }

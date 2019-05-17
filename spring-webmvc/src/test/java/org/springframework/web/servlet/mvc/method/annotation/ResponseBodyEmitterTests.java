@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2017 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,14 @@ import org.mockito.MockitoAnnotations;
 
 import org.springframework.http.MediaType;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.willThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 /**
  * Unit tests for {@link ResponseBodyEmitter}.
@@ -144,7 +150,7 @@ public class ResponseBodyEmitterTests {
 		verifyNoMoreInteractions(this.handler);
 
 		IOException failure = new IOException();
-		doThrow(failure).when(this.handler).send("foo", MediaType.TEXT_PLAIN);
+		willThrow(failure).given(this.handler).send("foo", MediaType.TEXT_PLAIN);
 		try {
 			this.emitter.send("foo", MediaType.TEXT_PLAIN);
 			fail("Expected exception");

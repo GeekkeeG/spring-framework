@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2017 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageDeliveryException;
@@ -37,8 +38,18 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.willAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 /**
  * Unit tests for {@link GenericMessagingTemplate}.
@@ -69,10 +80,10 @@ public class GenericMessagingTemplateTests {
 	public void sendWithTimeout() {
 		SubscribableChannel channel = mock(SubscribableChannel.class);
 		final AtomicReference<Message<?>> sent = new AtomicReference<>();
-		doAnswer(invocation -> {
+		willAnswer(invocation -> {
 			sent.set(invocation.getArgument(0));
 			return true;
-		}).when(channel).send(any(Message.class), eq(30_000L));
+		}).given(channel).send(any(Message.class), eq(30_000L));
 		Message<?> message = MessageBuilder.withPayload("request")
 				.setHeader(GenericMessagingTemplate.DEFAULT_SEND_TIMEOUT_HEADER, 30_000L)
 				.setHeader(GenericMessagingTemplate.DEFAULT_RECEIVE_TIMEOUT_HEADER, 1L)
@@ -88,10 +99,10 @@ public class GenericMessagingTemplateTests {
 	public void sendWithTimeoutMutable() {
 		SubscribableChannel channel = mock(SubscribableChannel.class);
 		final AtomicReference<Message<?>> sent = new AtomicReference<>();
-		doAnswer(invocation -> {
+		willAnswer(invocation -> {
 			sent.set(invocation.getArgument(0));
 			return true;
-		}).when(channel).send(any(Message.class), eq(30_000L));
+		}).given(channel).send(any(Message.class), eq(30_000L));
 		MessageHeaderAccessor accessor = new MessageHeaderAccessor();
 		accessor.setLeaveMutable(true);
 		Message<?> message = new GenericMessage<>("request", accessor.getMessageHeaders());
@@ -129,12 +140,10 @@ public class GenericMessagingTemplateTests {
 
 		SubscribableChannel channel = mock(SubscribableChannel.class);
 		MessageHandler handler = createLateReplier(latch, failure);
-		doAnswer(invocation -> {
-			this.executor.execute(() -> {
-				handler.handleMessage(invocation.getArgument(0));
-			});
+		willAnswer(invocation -> {
+			this.executor.execute(() -> handler.handleMessage(invocation.getArgument(0)));
 			return true;
-		}).when(channel).send(any(Message.class), anyLong());
+		}).given(channel).send(any(Message.class), anyLong());
 
 		assertNull(this.template.convertSendAndReceive(channel, "request", String.class));
 		assertTrue(latch.await(10_000, TimeUnit.MILLISECONDS));
@@ -157,12 +166,10 @@ public class GenericMessagingTemplateTests {
 
 		SubscribableChannel channel = mock(SubscribableChannel.class);
 		MessageHandler handler = createLateReplier(latch, failure);
-		doAnswer(invocation -> {
-			this.executor.execute(() -> {
-				handler.handleMessage(invocation.getArgument(0));
-			});
+		willAnswer(invocation -> {
+			this.executor.execute(() -> handler.handleMessage(invocation.getArgument(0)));
 			return true;
-		}).when(channel).send(any(Message.class), anyLong());
+		}).given(channel).send(any(Message.class), anyLong());
 
 		Message<?> message = MessageBuilder.withPayload("request")
 				.setHeader(GenericMessagingTemplate.DEFAULT_SEND_TIMEOUT_HEADER, 30_000L)
@@ -191,12 +198,10 @@ public class GenericMessagingTemplateTests {
 
 		SubscribableChannel channel = mock(SubscribableChannel.class);
 		MessageHandler handler = createLateReplier(latch, failure);
-		doAnswer(invocation -> {
-			this.executor.execute(() -> {
-				handler.handleMessage(invocation.getArgument(0));
-			});
+		willAnswer(invocation -> {
+			this.executor.execute(() -> handler.handleMessage(invocation.getArgument(0)));
 			return true;
-		}).when(channel).send(any(Message.class), anyLong());
+		}).given(channel).send(any(Message.class), anyLong());
 
 		Message<?> message = MessageBuilder.withPayload("request")
 				.setHeader("sto", 30_000L)

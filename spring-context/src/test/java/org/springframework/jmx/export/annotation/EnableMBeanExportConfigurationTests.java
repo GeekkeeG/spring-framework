@@ -20,9 +20,7 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
 import org.junit.After;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -41,7 +39,9 @@ import org.springframework.jmx.support.ObjectNameManager;
 import org.springframework.jmx.support.RegistrationPolicy;
 import org.springframework.mock.env.MockEnvironment;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Tests for {@link EnableMBeanExport} and {@link MBeanExportConfiguration}.
@@ -51,9 +51,6 @@ import static org.junit.Assert.*;
  * @see AnnotationLazyInitMBeanTests
  */
 public class EnableMBeanExportConfigurationTests {
-
-	@Rule
-	public final ExpectedException thrown = ExpectedException.none();
 
 	private AnnotationConfigApplicationContext ctx;
 
@@ -85,19 +82,19 @@ public class EnableMBeanExportConfigurationTests {
 	@Test
 	@SuppressWarnings("resource")
 	public void testPackagePrivateExtensionCantBeExposed() {
-		this.thrown.expect(InvalidMetadataException.class);
-		this.thrown.expectMessage(PackagePrivateTestBean.class.getName());
-		this.thrown.expectMessage("must be public");
-		new AnnotationConfigApplicationContext(PackagePrivateConfiguration.class);
+		assertThatExceptionOfType(InvalidMetadataException.class).isThrownBy(() ->
+				new AnnotationConfigApplicationContext(PackagePrivateConfiguration.class))
+			.withMessageContaining(PackagePrivateTestBean.class.getName())
+			.withMessageContaining("must be public");
 	}
 
 	@Test
 	@SuppressWarnings("resource")
 	public void testPackagePrivateImplementationCantBeExposed() {
-		this.thrown.expect(InvalidMetadataException.class);
-		this.thrown.expectMessage(PackagePrivateAnnotationTestBean.class.getName());
-		this.thrown.expectMessage("must be public");
-		new AnnotationConfigApplicationContext(PackagePrivateInterfaceImplementationConfiguration.class);
+		assertThatExceptionOfType(InvalidMetadataException.class).isThrownBy(() ->
+				new AnnotationConfigApplicationContext(PackagePrivateInterfaceImplementationConfiguration.class))
+			.withMessageContaining(PackagePrivateAnnotationTestBean.class.getName())
+			.withMessageContaining("must be public");
 	}
 
 	@Test

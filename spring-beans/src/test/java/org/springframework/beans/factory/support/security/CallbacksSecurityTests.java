@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,13 +53,17 @@ import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Security test case. Checks whether the container uses its privileges for its
  * internal work but does not leak them when touching/calling user code.
  *
- *t The first half of the test case checks that permissions are downgraded when
+ * <p>The first half of the test case checks that permissions are downgraded when
  * calling user code while the second half that the caller code permission get
  * through and Spring doesn't override the permission stack.
  *
@@ -158,7 +162,7 @@ public class CallbacksSecurityTests {
 		}
 	}
 
-	@SuppressWarnings("unused")
+	@SuppressWarnings({ "unused", "rawtypes" })
 	private static class NonPrivilegedFactoryBean implements SmartFactoryBean {
 		private String expectedName;
 
@@ -553,4 +557,5 @@ public class CallbacksSecurityTests {
 			}
 		}, provider.getAccessControlContext());
 	}
+
 }

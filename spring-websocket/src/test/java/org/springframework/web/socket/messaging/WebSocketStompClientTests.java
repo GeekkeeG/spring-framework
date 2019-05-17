@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2016 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,8 +46,19 @@ import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.WebSocketClient;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.notNull;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 /**
  * Unit tests for {@link WebSocketStompClient}.
@@ -84,8 +95,8 @@ public class WebSocketStompClientTests {
 
 		this.webSocketHandlerCaptor = ArgumentCaptor.forClass(WebSocketHandler.class);
 		this.handshakeFuture = new SettableListenableFuture<>();
-		when(webSocketClient.doHandshake(this.webSocketHandlerCaptor.capture(), any(), any(URI.class)))
-				.thenReturn(this.handshakeFuture);
+		given(webSocketClient.doHandshake(this.webSocketHandlerCaptor.capture(), any(), any(URI.class)))
+				.willReturn(this.handshakeFuture);
 	}
 
 
@@ -292,7 +303,7 @@ public class WebSocketStompClientTests {
 		TcpConnection<byte[]> tcpConnection = getTcpConnection();
 
 		ScheduledFuture future = mock(ScheduledFuture.class);
-		when(this.taskScheduler.scheduleWithFixedDelay(any(), eq(1L))).thenReturn(future);
+		given(this.taskScheduler.scheduleWithFixedDelay(any(), eq(1L))).willReturn(future);
 
 		tcpConnection.onReadInactivity(mock(Runnable.class), 2L);
 		tcpConnection.onWriteInactivity(mock(Runnable.class), 2L);

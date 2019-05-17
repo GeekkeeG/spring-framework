@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2015 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.After;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -48,8 +46,13 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import static org.junit.Assert.*;
-import static org.springframework.transaction.event.TransactionPhase.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.springframework.transaction.event.TransactionPhase.AFTER_COMMIT;
+import static org.springframework.transaction.event.TransactionPhase.AFTER_COMPLETION;
+import static org.springframework.transaction.event.TransactionPhase.AFTER_ROLLBACK;
+import static org.springframework.transaction.event.TransactionPhase.BEFORE_COMMIT;
 
 /**
  * Integration tests for {@link TransactionalEventListener} support
@@ -65,9 +68,6 @@ public class TransactionalEventListenerTests {
 	private EventCollector eventCollector;
 
 	private TransactionTemplate transactionTemplate = new TransactionTemplate(new CallCountingTransactionManager());
-
-	@Rule
-	public final ExpectedException thrown = ExpectedException.none();
 
 
 	@After

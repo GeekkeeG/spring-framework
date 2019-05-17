@@ -60,10 +60,20 @@ import org.springframework.web.socket.handler.TestWebSocketSession;
 import org.springframework.web.socket.sockjs.transport.SockJsSession;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.*;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 /**
  * Test fixture for {@link StompSubProtocolHandler} tests.
@@ -89,7 +99,7 @@ public class StompSubProtocolHandlerTests {
 		this.channel = Mockito.mock(MessageChannel.class);
 		this.messageCaptor = ArgumentCaptor.forClass(Message.class);
 
-		when(this.channel.send(any())).thenReturn(true);
+		given(this.channel.send(any())).willReturn(true);
 
 		this.session = new TestWebSocketSession();
 		this.session.setId("s1");
@@ -213,7 +223,7 @@ public class StompSubProtocolHandlerTests {
 	public void handleMessageToClientWithHeartbeatSuppressingSockJsHeartbeat() throws IOException {
 
 		SockJsSession sockJsSession = Mockito.mock(SockJsSession.class);
-		when(sockJsSession.getId()).thenReturn("s1");
+		given(sockJsSession.getId()).willReturn("s1");
 		StompHeaderAccessor accessor = StompHeaderAccessor.create(StompCommand.CONNECTED);
 		accessor.setHeartbeat(0, 10);
 		Message<byte[]> message = MessageBuilder.createMessage(EMPTY_PAYLOAD, accessor.getMessageHeaders());
@@ -226,7 +236,7 @@ public class StompSubProtocolHandlerTests {
 		verifyNoMoreInteractions(sockJsSession);
 
 		sockJsSession = Mockito.mock(SockJsSession.class);
-		when(sockJsSession.getId()).thenReturn("s1");
+		given(sockJsSession.getId()).willReturn("s1");
 		accessor = StompHeaderAccessor.create(StompCommand.CONNECTED);
 		accessor.setHeartbeat(0, 0);
 		message = MessageBuilder.createMessage(EMPTY_PAYLOAD, accessor.getMessageHeaders());

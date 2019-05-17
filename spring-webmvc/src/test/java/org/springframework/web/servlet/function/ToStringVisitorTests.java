@@ -21,7 +21,7 @@ import org.junit.Test;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.springframework.web.servlet.function.RequestPredicates.GET;
 import static org.springframework.web.servlet.function.RequestPredicates.accept;
 import static org.springframework.web.servlet.function.RequestPredicates.contentType;
@@ -41,11 +41,11 @@ public class ToStringVisitorTests {
 	public void nested() {
 		HandlerFunction<ServerResponse> handler = new SimpleHandlerFunction();
 		RouterFunction<ServerResponse> routerFunction = route()
-				.path("/foo", builder -> {
+				.path("/foo", builder ->
 					builder.path("/bar", () -> route()
 							.GET("/baz", handler)
-							.build());
-				})
+							.build())
+				)
 				.build();
 
 		ToStringVisitor visitor = new ToStringVisitor();

@@ -83,8 +83,15 @@ import org.junit.Test;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.util.StringUtils;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test class for {@link Jackson2ObjectMapperBuilder}.
@@ -644,6 +651,7 @@ public class Jackson2ObjectMapperBuilderTests {
 
 	public static class JacksonVisibilityBean {
 
+		@SuppressWarnings("unused")
 		private String property1;
 
 		public String property2;
@@ -667,7 +675,8 @@ public class Jackson2ObjectMapperBuilderTests {
 			try {
 				return OffsetDateTime.parse(value);
 
-			} catch (DateTimeParseException exception) {
+			}
+			catch (DateTimeParseException exception) {
 				return OffsetDateTime.parse(value + CURRENT_ZONE_OFFSET);
 			}
 		}

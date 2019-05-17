@@ -34,8 +34,14 @@ import org.springframework.core.NamedThreadLocal;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 /**
  * Unit tests for {@link DefaultWebClient}.
@@ -58,7 +64,7 @@ public class DefaultWebClientTests {
 		MockitoAnnotations.initMocks(this);
 		this.exchangeFunction = mock(ExchangeFunction.class);
 		ClientResponse mockResponse = mock(ClientResponse.class);
-		when(this.exchangeFunction.exchange(this.captor.capture())).thenReturn(Mono.just(mockResponse));
+		given(this.exchangeFunction.exchange(this.captor.capture())).willReturn(Mono.just(mockResponse));
 		this.builder = WebClient.builder().baseUrl("/base").exchangeFunction(this.exchangeFunction);
 	}
 
@@ -277,7 +283,7 @@ public class DefaultWebClientTests {
 	@Test
 	public void switchToErrorOnEmptyClientResponseMono() {
 		ExchangeFunction exchangeFunction = mock(ExchangeFunction.class);
-		when(exchangeFunction.exchange(any())).thenReturn(Mono.empty());
+		given(exchangeFunction.exchange(any())).willReturn(Mono.empty());
 		WebClient.Builder builder = WebClient.builder().baseUrl("/base").exchangeFunction(exchangeFunction);
 		StepVerifier.create(builder.build().get().uri("/path").exchange())
 				.expectErrorMessage("The underlying HTTP client completed without emitting a response.")
@@ -287,12 +293,12 @@ public class DefaultWebClientTests {
 	@Test
 	public void shouldApplyFiltersAtSubscription() {
 		WebClient client = this.builder
-				.filter((request, next) -> {
-					return next.exchange(ClientRequest
+				.filter((request, next) ->
+					next.exchange(ClientRequest
 							.from(request)
 							.header("Custom", "value")
-							.build());
-				})
+							.build())
+				)
 				.build();
 		Mono<ClientResponse> exchange = client.get().uri("/path").exchange();
 		verifyZeroInteractions(this.exchangeFunction);

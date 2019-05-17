@@ -1,4 +1,5 @@
-/* Copyright 2002-2015 the original author or authors.
+/*
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +21,17 @@ import java.util.Map;
 import javax.websocket.Session;
 
 import org.junit.Test;
-
 import org.mockito.Mockito;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.socket.handler.TestPrincipal;
 
-import static org.junit.Assert.*;
-import static org.mockito.BDDMockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 /**
  * Unit tests for {@link org.springframework.web.socket.adapter.standard.StandardWebSocketSession}.

@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2018 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
@@ -67,11 +66,12 @@ import org.springframework.mock.http.server.reactive.test.MockServerHttpResponse
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import static java.nio.charset.StandardCharsets.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
-import static org.springframework.http.codec.json.Jackson2CodecSupport.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.springframework.http.codec.json.Jackson2CodecSupport.JSON_VIEW_HINT;
 
 /**
  * @author Arjen Poutsma
@@ -127,7 +127,7 @@ public class BodyInsertersTests {
 		StepVerifier.create(response.getBody())
 				.consumeNextWith(buf -> {
 					String actual = DataBufferTestUtils.dumpString(buf, UTF_8);
-					Assert.assertEquals("foo", actual);
+					assertEquals("foo", actual);
 				})
 				.expectComplete()
 				.verify();
@@ -173,7 +173,7 @@ public class BodyInsertersTests {
 		StepVerifier.create(response.getBody())
 				.consumeNextWith(buf -> {
 					String actual = DataBufferTestUtils.dumpString(buf, UTF_8);
-					Assert.assertEquals("foo", actual);
+					assertEquals("foo", actual);
 				})
 				.expectComplete()
 				.verify();

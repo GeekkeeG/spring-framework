@@ -19,13 +19,14 @@ package org.springframework.oxm.jibx;
 import java.io.ByteArrayInputStream;
 import javax.xml.transform.stream.StreamSource;
 
-import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.springframework.oxm.AbstractUnmarshallerTests;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * NOTE: These tests fail under Eclipse/IDEA because JiBX binding does
@@ -45,7 +46,7 @@ public class JibxUnmarshallerTests extends AbstractUnmarshallerTests<JibxMarshal
 	@BeforeClass
 	public static void compilerAssumptions() {
 		// JiBX compiler is currently not compatible with JDK 9
-		Assume.assumeTrue(System.getProperty("java.version").startsWith("1.8."));
+		assumeTrue(System.getProperty("java.version").startsWith("1.8."));
 	}
 
 

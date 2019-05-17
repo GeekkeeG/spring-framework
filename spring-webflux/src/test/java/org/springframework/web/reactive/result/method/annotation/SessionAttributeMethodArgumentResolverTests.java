@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2018 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,8 +41,13 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.ServerWebInputException;
 import org.springframework.web.server.WebSession;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
 /**
  * Unit tests for {@link SessionAttributeMethodArgumentResolver}.
@@ -85,7 +90,7 @@ public class SessionAttributeMethodArgumentResolverTests {
 		StepVerifier.create(mono).expectError(ServerWebInputException.class).verify();
 
 		Foo foo = new Foo();
-		when(this.session.getAttribute("foo")).thenReturn(foo);
+		given(this.session.getAttribute("foo")).willReturn(foo);
 		mono = this.resolver.resolveArgument(param, new BindingContext(), this.exchange);
 		assertSame(foo, mono.block());
 	}
@@ -94,7 +99,7 @@ public class SessionAttributeMethodArgumentResolverTests {
 	public void resolveWithName() {
 		MethodParameter param = initMethodParameter(1);
 		Foo foo = new Foo();
-		when(this.session.getAttribute("specialFoo")).thenReturn(foo);
+		given(this.session.getAttribute("specialFoo")).willReturn(foo);
 		Mono<Object> mono = this.resolver.resolveArgument(param, new BindingContext(), this.exchange);
 		assertSame(foo, mono.block());
 	}
@@ -106,7 +111,7 @@ public class SessionAttributeMethodArgumentResolverTests {
 		assertNull(mono.block());
 
 		Foo foo = new Foo();
-		when(this.session.getAttribute("foo")).thenReturn(foo);
+		given(this.session.getAttribute("foo")).willReturn(foo);
 		mono = this.resolver.resolveArgument(param, new BindingContext(), this.exchange);
 		assertSame(foo, mono.block());
 	}
@@ -126,7 +131,7 @@ public class SessionAttributeMethodArgumentResolverTests {
 		BindingContext bindingContext = new BindingContext(initializer);
 
 		Foo foo = new Foo();
-		when(this.session.getAttribute("foo")).thenReturn(foo);
+		given(this.session.getAttribute("foo")).willReturn(foo);
 		actual = (Optional<Object>) this.resolver.resolveArgument(param, bindingContext, this.exchange).block();
 
 		assertNotNull(actual);

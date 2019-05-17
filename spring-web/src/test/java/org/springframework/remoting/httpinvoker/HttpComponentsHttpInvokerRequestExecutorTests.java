@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2016 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,13 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.withSettings;
 
 /**
  * @author Stephane Nicoll
@@ -70,7 +75,7 @@ public class HttpComponentsHttpInvokerRequestExecutorTests {
 		CloseableHttpClient client = mock(CloseableHttpClient.class,
 				withSettings().extraInterfaces(Configurable.class));
 		Configurable configurable = (Configurable) client;
-		when(configurable.getConfig()).thenReturn(defaultConfig);
+		given(configurable.getConfig()).willReturn(defaultConfig);
 
 		HttpComponentsHttpInvokerRequestExecutor executor =
 				new HttpComponentsHttpInvokerRequestExecutor(client);
@@ -93,7 +98,7 @@ public class HttpComponentsHttpInvokerRequestExecutorTests {
 		CloseableHttpClient client = mock(CloseableHttpClient.class,
 				withSettings().extraInterfaces(Configurable.class));
 		Configurable configurable = (Configurable) client;
-		when(configurable.getConfig()).thenReturn(defaultConfig);
+		given(configurable.getConfig()).willReturn(defaultConfig);
 
 		HttpComponentsHttpInvokerRequestExecutor executor =
 				new HttpComponentsHttpInvokerRequestExecutor(client);
@@ -114,7 +119,7 @@ public class HttpComponentsHttpInvokerRequestExecutorTests {
 		final CloseableHttpClient client = mock(CloseableHttpClient.class,
 				withSettings().extraInterfaces(Configurable.class));
 		Configurable configurable = (Configurable) client;
-		when(configurable.getConfig()).thenReturn(defaultConfig);
+		given(configurable.getConfig()).willReturn(defaultConfig);
 
 		HttpComponentsHttpInvokerRequestExecutor executor =
 				new HttpComponentsHttpInvokerRequestExecutor() {
@@ -134,7 +139,7 @@ public class HttpComponentsHttpInvokerRequestExecutorTests {
 		// Update the Http client so that it returns an updated  config
 		RequestConfig updatedDefaultConfig = RequestConfig.custom()
 				.setConnectTimeout(1234).build();
-		when(configurable.getConfig()).thenReturn(updatedDefaultConfig);
+		given(configurable.getConfig()).willReturn(updatedDefaultConfig);
 		executor.setReadTimeout(7000);
 		HttpPost httpPost2 = executor.createHttpPost(config);
 		RequestConfig requestConfig2 = httpPost2.getConfig();
@@ -160,7 +165,7 @@ public class HttpComponentsHttpInvokerRequestExecutorTests {
 
 	private HttpInvokerClientConfiguration mockHttpInvokerClientConfiguration(String serviceUrl) {
 		HttpInvokerClientConfiguration config = mock(HttpInvokerClientConfiguration.class);
-		when(config.getServiceUrl()).thenReturn(serviceUrl);
+		given(config.getServiceUrl()).willReturn(serviceUrl);
 		return config;
 	}
 

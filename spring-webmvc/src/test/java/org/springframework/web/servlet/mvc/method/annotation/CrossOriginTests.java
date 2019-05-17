@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2018 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,7 @@ import java.util.Arrays;
 import java.util.Properties;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
@@ -55,8 +53,13 @@ import org.springframework.web.servlet.mvc.condition.ProducesRequestCondition;
 import org.springframework.web.servlet.mvc.condition.RequestMethodsRequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test fixture for {@link CrossOrigin @CrossOrigin} annotated methods.
@@ -70,9 +73,6 @@ public class CrossOriginTests {
 	private final TestRequestMappingInfoHandlerMapping handlerMapping = new TestRequestMappingInfoHandlerMapping();
 
 	private final MockHttpServletRequest request = new MockHttpServletRequest();
-
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
 
 
 	@Before
@@ -172,10 +172,10 @@ public class CrossOriginTests {
 
 	@Test
 	public void bogusAllowCredentialsValue() throws Exception {
-		exception.expect(IllegalStateException.class);
-		exception.expectMessage(containsString("@CrossOrigin's allowCredentials"));
-		exception.expectMessage(containsString("current value is [bogus]"));
-		this.handlerMapping.registerHandler(new MethodLevelControllerWithBogusAllowCredentialsValue());
+		assertThatIllegalStateException().isThrownBy(() ->
+				this.handlerMapping.registerHandler(new MethodLevelControllerWithBogusAllowCredentialsValue()))
+			.withMessageContaining("@CrossOrigin's allowCredentials")
+			.withMessageContaining("current value is [bogus]");
 	}
 
 	@Test

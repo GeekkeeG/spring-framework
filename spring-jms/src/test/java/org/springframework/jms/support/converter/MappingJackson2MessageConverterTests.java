@@ -29,16 +29,19 @@ import javax.jms.TextMessage;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import org.springframework.core.MethodParameter;
 
-import static org.junit.Assert.*;
-import static org.mockito.BDDMockito.*;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 /**
  * @author Arjen Poutsma
@@ -46,9 +49,6 @@ import static org.mockito.BDDMockito.*;
  * @author Stephane Nicoll
  */
 public class MappingJackson2MessageConverterTests {
-
-	@Rule
-	public final ExpectedException thrown = ExpectedException.none();
 
 	private MappingJackson2MessageConverter converter;
 
@@ -206,8 +206,8 @@ public class MappingJackson2MessageConverterTests {
 		Method method = this.getClass().getDeclaredMethod("invalid");
 		MethodParameter returnType = new MethodParameter(method, -1);
 
-		thrown.expect(IllegalArgumentException.class);
-		testToTextMessageWithReturnType(returnType);
+		assertThatIllegalArgumentException().isThrownBy(() ->
+				testToTextMessageWithReturnType(returnType));
 	}
 
 	private void testToTextMessageWithReturnType(MethodParameter returnType) throws JMSException, NoSuchMethodException {

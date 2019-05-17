@@ -37,8 +37,14 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.bind.support.ConfigurableWebBindingInitializer;
 import org.springframework.web.reactive.accept.RequestedContentTypeResolverBuilder;
 
-import static org.junit.Assert.*;
-import static org.mockito.BDDMockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willAnswer;
+import static org.mockito.Mockito.verify;
 
 /**
  * Test fixture for {@link DelegatingWebFluxConfiguration} tests.
@@ -109,11 +115,11 @@ public class DelegatingWebFluxConfigurationTests {
 	@Test
 	public void resourceHandlerMapping() throws Exception {
 		delegatingConfig.setConfigurers(Collections.singletonList(webFluxConfigurer));
-		doAnswer(invocation -> {
+		willAnswer(invocation -> {
 			ResourceHandlerRegistry registry = invocation.getArgument(0);
 			registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static");
 			return null;
-		}).when(webFluxConfigurer).addResourceHandlers(any(ResourceHandlerRegistry.class));
+		}).given(webFluxConfigurer).addResourceHandlers(any(ResourceHandlerRegistry.class));
 
 		delegatingConfig.resourceHandlerMapping(delegatingConfig.resourceUrlProvider());
 		verify(webFluxConfigurer).addResourceHandlers(any(ResourceHandlerRegistry.class));

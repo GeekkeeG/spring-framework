@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,8 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.tests.sample.beans.TestBean;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Rob Harrop
@@ -69,6 +70,7 @@ public class CollectionsWithDefaultTypesTests {
 		assertMap(bean.getSomeMap());
 	}
 
+	@SuppressWarnings("rawtypes")
 	private void assertMap(Map<?,?> map) {
 		for (Map.Entry entry : map.entrySet()) {
 			assertEquals("Key type is incorrect", Integer.class, entry.getKey().getClass());
@@ -77,6 +79,7 @@ public class CollectionsWithDefaultTypesTests {
 	}
 
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void testBuildCollectionFromMixtureOfReferencesAndValues() throws Exception {
 		MixedCollectionBean jumble = (MixedCollectionBean) this.beanFactory.getBean("jumble");
 		assertTrue("Expected 3 elements, not " + jumble.getJumble().size(),

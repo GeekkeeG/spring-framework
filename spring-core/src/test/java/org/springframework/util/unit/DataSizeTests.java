@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2018 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,12 @@
 
 package org.springframework.util.unit;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for {@link DataSize}.
@@ -28,9 +29,6 @@ import static org.junit.Assert.*;
  * @author Stephane Nicoll
  */
 public class DataSizeTests {
-
-	@Rule
-	public final ExpectedException thrown = ExpectedException.none();
 
 	@Test
 	public void ofBytesToBytes() {
@@ -214,10 +212,9 @@ public class DataSizeTests {
 
 	@Test
 	public void parseWithUnsupportedUnit() {
-		this.thrown.expect(IllegalArgumentException.class);
-		this.thrown.expectMessage("3WB");
-		this.thrown.expectMessage("is not a valid data size");
-		DataSize.parse("3WB");
+		assertThatIllegalArgumentException().isThrownBy(() ->
+				DataSize.parse("3WB"))
+			.withMessage("'3WB' is not a valid data size");
 	}
 
 }

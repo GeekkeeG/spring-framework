@@ -53,15 +53,21 @@ import org.springframework.validation.ObjectError;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Juergen Hoeller
  */
+@SuppressWarnings("resource")
 public class ValidatorFactoryTests {
 
 	@Test
+	@SuppressWarnings("cast")
 	public void testSimpleValidation() {
 		LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
 		validator.afterPropertiesSet();
@@ -88,6 +94,7 @@ public class ValidatorFactoryTests {
 	}
 
 	@Test
+	@SuppressWarnings("cast")
 	public void testSimpleValidationWithCustomProvider() {
 		LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
 		validator.setProviderClass(HibernateValidator.class);

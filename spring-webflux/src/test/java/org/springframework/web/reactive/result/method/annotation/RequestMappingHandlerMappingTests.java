@@ -49,8 +49,11 @@ import org.springframework.web.reactive.result.method.RequestMappingInfo;
 import org.springframework.web.util.pattern.PathPattern;
 import org.springframework.web.util.pattern.PathPatternParser;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
 
 /**
  * Unit tests for {@link RequestMappingHandlerMapping}.
@@ -165,7 +168,7 @@ public class RequestMappingHandlerMappingTests {
 			RequestMethod requestMethod) throws Exception {
 
 		Class<?> clazz = ComposedAnnotationController.class;
-		Method method = ClassUtils.getMethod(clazz, methodName, null);
+		Method method = ClassUtils.getMethod(clazz, methodName, (Class<?>[]) null);
 		RequestMappingInfo info = this.handlerMapping.getMappingForMethod(method, clazz);
 
 		assertNotNull(info);

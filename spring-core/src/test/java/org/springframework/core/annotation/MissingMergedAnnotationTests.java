@@ -27,7 +27,8 @@ import org.junit.Test;
 
 import org.springframework.util.ConcurrentReferenceHashMap;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
  * Tests for {@link MissingMergedAnnotation}.
@@ -262,12 +263,12 @@ public class MissingMergedAnnotationTests {
 	@Test
 	public void synthesizeWithPredicateWhenPredicateMatchesThrowsNoSuchElementException() {
 		assertThatNoSuchElementException().isThrownBy(
-				() -> this.missing.synthesize((annotation) -> true));
+				() -> this.missing.synthesize(annotation -> true));
 	}
 
 	@Test
 	public void synthesizeWithPredicateWhenPredicateDoesNotMatchReturnsEmpty() {
-		assertThat(this.missing.synthesize((annotation) -> false)).isEmpty();
+		assertThat(this.missing.synthesize(annotation -> false)).isEmpty();
 	}
 
 	@Test

@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2017 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,8 @@ import org.junit.Test;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
 
 /**
  * @author Juergen Hoeller
@@ -91,7 +92,7 @@ public class AsyncResultTests {
 		String value = "val";
 		final Set<String> values = new HashSet<>(1);
 		ListenableFuture<String> future = AsyncResult.forValue(value);
-		future.addCallback(values::add, (ex) -> fail("Failure callback not expected: " + ex));
+		future.addCallback(values::add, ex -> fail("Failure callback not expected: " + ex));
 		assertSame(value, values.iterator().next());
 		assertSame(value, future.get());
 		assertSame(value, future.completable().get());
@@ -103,7 +104,7 @@ public class AsyncResultTests {
 		IOException ex = new IOException();
 		final Set<Throwable> values = new HashSet<>(1);
 		ListenableFuture<String> future = AsyncResult.forExecutionException(ex);
-		future.addCallback((result) -> fail("Success callback not expected: " + result), values::add);
+		future.addCallback(result -> fail("Success callback not expected: " + result), values::add);
 		assertSame(ex, values.iterator().next());
 		try {
 			future.get();

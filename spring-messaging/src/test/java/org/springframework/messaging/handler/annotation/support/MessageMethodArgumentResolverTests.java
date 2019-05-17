@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2018 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,7 @@ import java.lang.reflect.Method;
 import java.util.Locale;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.messaging.Message;
@@ -33,8 +31,13 @@ import org.springframework.messaging.support.ErrorMessage;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.messaging.support.MessageBuilder;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
 /**
  * Unit tests for {@link MessageMethodArgumentResolver}.
@@ -43,9 +46,6 @@ import static org.mockito.Mockito.*;
  * @author Juergen Hoeller
  */
 public class MessageMethodArgumentResolverTests {
-
-	@Rule
-	public final ExpectedException thrown = ExpectedException.none();
 
 	private MessageConverter converter;
 
@@ -96,7 +96,7 @@ public class MessageMethodArgumentResolverTests {
 		Message<String> message = MessageBuilder.withPayload("test").build();
 		MethodParameter parameter = new MethodParameter(this.method, 1);
 
-		when(this.converter.fromMessage(message, Integer.class)).thenReturn(4);
+		given(this.converter.fromMessage(message, Integer.class)).willReturn(4);
 
 		@SuppressWarnings("unchecked")
 		Message<Integer> actual = (Message<Integer>) this.resolver.resolveArgument(parameter, message);
@@ -112,10 +112,10 @@ public class MessageMethodArgumentResolverTests {
 		MethodParameter parameter = new MethodParameter(this.method, 1);
 
 		assertTrue(this.resolver.supportsParameter(parameter));
-		thrown.expect(MessageConversionException.class);
-		thrown.expectMessage(Integer.class.getName());
-		thrown.expectMessage(String.class.getName());
-		this.resolver.resolveArgument(parameter, message);
+		assertThatExceptionOfType(MessageConversionException.class).isThrownBy(() ->
+				this.resolver.resolveArgument(parameter, message))
+			.withMessageContaining(Integer.class.getName())
+			.withMessageContaining(String.class.getName());
 	}
 
 	@Test
@@ -124,11 +124,11 @@ public class MessageMethodArgumentResolverTests {
 		MethodParameter parameter = new MethodParameter(this.method, 1);
 
 		assertTrue(this.resolver.supportsParameter(parameter));
-		thrown.expect(MessageConversionException.class);
-		thrown.expectMessage("payload is empty");
-		thrown.expectMessage(Integer.class.getName());
-		thrown.expectMessage(String.class.getName());
-		this.resolver.resolveArgument(parameter, message);
+		assertThatExceptionOfType(MessageConversionException.class).isThrownBy(() ->
+				this.resolver.resolveArgument(parameter, message))
+			.withMessageContaining("payload is empty")
+			.withMessageContaining(Integer.class.getName())
+			.withMessageContaining(String.class.getName());
 	}
 
 	@Test
@@ -146,10 +146,10 @@ public class MessageMethodArgumentResolverTests {
 		MethodParameter parameter = new MethodParameter(this.method, 3);
 
 		assertTrue(this.resolver.supportsParameter(parameter));
-		thrown.expect(MessageConversionException.class);
-		thrown.expectMessage(Number.class.getName());
-		thrown.expectMessage(Locale.class.getName());
-		this.resolver.resolveArgument(parameter, message);
+		assertThatExceptionOfType(MessageConversionException.class).isThrownBy(() ->
+				this.resolver.resolveArgument(parameter, message))
+			.withMessageContaining(Number.class.getName())
+			.withMessageContaining(Locale.class.getName());
 	}
 
 	@Test
@@ -177,10 +177,10 @@ public class MessageMethodArgumentResolverTests {
 		MethodParameter parameter = new MethodParameter(this.method, 4);
 
 		assertTrue(this.resolver.supportsParameter(parameter));
-		thrown.expect(MethodArgumentTypeMismatchException.class);
-		thrown.expectMessage(ErrorMessage.class.getName());
-		thrown.expectMessage(GenericMessage.class.getName());
-		assertSame(message, this.resolver.resolveArgument(parameter, message));
+		assertThatExceptionOfType(MethodArgumentTypeMismatchException.class).isThrownBy(() ->
+				this.resolver.resolveArgument(parameter, message))
+			.withMessageContaining(ErrorMessage.class.getName())
+			.withMessageContaining(GenericMessage.class.getName());
 	}
 
 	@Test
@@ -202,10 +202,10 @@ public class MessageMethodArgumentResolverTests {
 		MethodParameter parameter = new MethodParameter(this.method, 1);
 
 		assertTrue(this.resolver.supportsParameter(parameter));
-		thrown.expect(MessageConversionException.class);
-		thrown.expectMessage(Integer.class.getName());
-		thrown.expectMessage(String.class.getName());
-		this.resolver.resolveArgument(parameter, message);
+		assertThatExceptionOfType(MessageConversionException.class).isThrownBy(() ->
+				this.resolver.resolveArgument(parameter, message))
+			.withMessageContaining(Integer.class.getName())
+			.withMessageContaining(String.class.getName());
 	}
 
 	@Test
@@ -216,11 +216,11 @@ public class MessageMethodArgumentResolverTests {
 		MethodParameter parameter = new MethodParameter(this.method, 1);
 
 		assertTrue(this.resolver.supportsParameter(parameter));
-		thrown.expect(MessageConversionException.class);
-		thrown.expectMessage("payload is empty");
-		thrown.expectMessage(Integer.class.getName());
-		thrown.expectMessage(String.class.getName());
-		this.resolver.resolveArgument(parameter, message);
+		assertThatExceptionOfType(MessageConversionException.class).isThrownBy(() ->
+				this.resolver.resolveArgument(parameter, message))
+			.withMessageContaining("payload is empty")
+			.withMessageContaining(Integer.class.getName())
+			.withMessageContaining(String.class.getName());
 	}
 
 	@Test // SPR-16486

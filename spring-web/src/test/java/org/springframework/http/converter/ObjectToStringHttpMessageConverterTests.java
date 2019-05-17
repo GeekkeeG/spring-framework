@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2018 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,12 @@ import org.springframework.http.server.ServletServerHttpResponse;
 import org.springframework.mock.web.test.MockHttpServletRequest;
 import org.springframework.mock.web.test.MockHttpServletResponse;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test cases for {@link ObjectToStringHttpMessageConverter} class.
@@ -107,6 +112,7 @@ public class ObjectToStringHttpMessageConverterTests {
 
 	@Test
 	public void writeAcceptCharset() throws IOException {
+		this.converter.setWriteAcceptCharset(true);
 		this.converter.write(new Date(), null, this.response);
 
 		assertNotNull(this.servletResponse.getHeader("Accept-Charset"));

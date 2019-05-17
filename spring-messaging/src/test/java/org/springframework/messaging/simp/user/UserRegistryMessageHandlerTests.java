@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2015 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,6 @@
  */
 
 package org.springframework.messaging.simp.user;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -40,6 +37,15 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.broker.BrokerAvailabilityEvent;
 import org.springframework.scheduling.TaskScheduler;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 /**
  * User tests for {@link UserRegistryMessageHandler}.
@@ -67,7 +73,7 @@ public class UserRegistryMessageHandlerTests {
 
 		MockitoAnnotations.initMocks(this);
 
-		when(this.brokerChannel.send(any())).thenReturn(true);
+		given(this.brokerChannel.send(any())).willReturn(true);
 		this.converter = new MappingJackson2MessageConverter();
 
 		SimpMessagingTemplate brokerTemplate = new SimpMessagingTemplate(this.brokerChannel);
@@ -91,7 +97,7 @@ public class UserRegistryMessageHandlerTests {
 	public void brokerUnavailableEvent() throws Exception {
 
 		ScheduledFuture future = Mockito.mock(ScheduledFuture.class);
-		when(this.taskScheduler.scheduleWithFixedDelay(any(Runnable.class), any(Long.class))).thenReturn(future);
+		given(this.taskScheduler.scheduleWithFixedDelay(any(Runnable.class), any(Long.class))).willReturn(future);
 
 		BrokerAvailabilityEvent event = new BrokerAvailabilityEvent(true, this);
 		this.handler.onApplicationEvent(event);
@@ -112,7 +118,7 @@ public class UserRegistryMessageHandlerTests {
 		simpUser1.addSessions(new TestSimpSession("456"));
 
 		HashSet<SimpUser> simpUsers = new HashSet<>(Arrays.asList(simpUser1, simpUser2));
-		when(this.localRegistry.getUsers()).thenReturn(simpUsers);
+		given(this.localRegistry.getUsers()).willReturn(simpUsers);
 
 		getUserRegistryTask().run();
 
@@ -142,8 +148,8 @@ public class UserRegistryMessageHandlerTests {
 
 		HashSet<SimpUser> simpUsers = new HashSet<>(Arrays.asList(simpUser1, simpUser2));
 		SimpUserRegistry remoteUserRegistry = mock(SimpUserRegistry.class);
-		when(remoteUserRegistry.getUserCount()).thenReturn(2);
-		when(remoteUserRegistry.getUsers()).thenReturn(simpUsers);
+		given(remoteUserRegistry.getUserCount()).willReturn(2);
+		given(remoteUserRegistry.getUsers()).willReturn(simpUsers);
 
 		MultiServerUserRegistry remoteRegistry = new MultiServerUserRegistry(remoteUserRegistry);
 		Message<?> message = this.converter.toMessage(remoteRegistry.getLocalRegistryDto(), null);
@@ -160,8 +166,8 @@ public class UserRegistryMessageHandlerTests {
 
 		TestSimpUser simpUser = new TestSimpUser("joe");
 		simpUser.addSessions(new TestSimpSession("123"));
-		when(this.localRegistry.getUserCount()).thenReturn(1);
-		when(this.localRegistry.getUsers()).thenReturn(Collections.singleton(simpUser));
+		given(this.localRegistry.getUserCount()).willReturn(1);
+		given(this.localRegistry.getUsers()).willReturn(Collections.singleton(simpUser));
 
 		assertEquals(1, this.multiServerRegistry.getUserCount());
 

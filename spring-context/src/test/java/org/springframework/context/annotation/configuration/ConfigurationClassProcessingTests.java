@@ -24,9 +24,7 @@ import java.util.function.Supplier;
 import javax.annotation.Resource;
 import javax.inject.Provider;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
@@ -60,7 +58,13 @@ import org.springframework.tests.sample.beans.ITestBean;
 import org.springframework.tests.sample.beans.NestedTestBean;
 import org.springframework.tests.sample.beans.TestBean;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Miscellaneous system tests covering {@link Bean} naming, aliases, scoping and
@@ -71,10 +75,6 @@ import static org.junit.Assert.*;
  * @author Sam Brannen
  */
 public class ConfigurationClassProcessingTests {
-
-	@Rule
-	public final ExpectedException exception = ExpectedException.none();
-
 
 	@Test
 	public void customBeanNameIsRespectedWhenConfiguredViaNameAttribute() {
@@ -97,8 +97,8 @@ public class ConfigurationClassProcessingTests {
 		assertSame(testBeanSupplier.get(), ac.getBean(beanName));
 
 		// method name should not be registered
-		exception.expect(NoSuchBeanDefinitionException.class);
-		ac.getBean("methodName");
+		assertThatExceptionOfType(NoSuchBeanDefinitionException.class).isThrownBy(() ->
+				ac.getBean("methodName"));
 	}
 
 	@Test
@@ -121,8 +121,8 @@ public class ConfigurationClassProcessingTests {
 		Arrays.stream(factory.getAliases(beanName)).map(factory::getBean).forEach(alias -> assertSame(testBean, alias));
 
 		// method name should not be registered
-		exception.expect(NoSuchBeanDefinitionException.class);
-		factory.getBean("methodName");
+		assertThatExceptionOfType(NoSuchBeanDefinitionException.class).isThrownBy(() ->
+				factory.getBean("methodName"));
 	}
 
 	@Test  // SPR-11830
@@ -145,8 +145,8 @@ public class ConfigurationClassProcessingTests {
 
 	@Test
 	public void testFinalBeanMethod() {
-		exception.expect(BeanDefinitionParsingException.class);
-		initBeanFactory(ConfigWithFinalBean.class);
+		assertThatExceptionOfType(BeanDefinitionParsingException.class).isThrownBy(() ->
+				initBeanFactory(ConfigWithFinalBean.class));
 	}
 
 	@Test

@@ -40,15 +40,22 @@ import org.springframework.core.codec.DecodingException;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.Pojo;
+import org.springframework.http.codec.json.JacksonViewBean.MyJacksonView1;
+import org.springframework.http.codec.json.JacksonViewBean.MyJacksonView3;
 import org.springframework.util.MimeType;
 
-import static java.util.Arrays.*;
-import static java.util.Collections.*;
-import static org.junit.Assert.*;
-import static org.springframework.core.ResolvableType.*;
-import static org.springframework.http.MediaType.*;
-import static org.springframework.http.codec.json.Jackson2JsonDecoder.*;
-import static org.springframework.http.codec.json.JacksonViewBean.*;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonMap;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.springframework.core.ResolvableType.forClass;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.APPLICATION_STREAM_JSON;
+import static org.springframework.http.MediaType.APPLICATION_XML;
+import static org.springframework.http.codec.json.Jackson2CodecSupport.JSON_VIEW_HINT;
 
 /**
  * Unit tests for {@link Jackson2JsonDecoder}.
@@ -208,6 +215,7 @@ public class Jackson2JsonDecoderTests extends AbstractDecoderTestCase<Jackson2Js
 	}
 
 
+	@SuppressWarnings("unused")
 	private static class BeanWithNoDefaultConstructor {
 
 		private final String property1;

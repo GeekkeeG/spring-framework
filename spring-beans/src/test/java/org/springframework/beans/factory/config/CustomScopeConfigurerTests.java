@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2018 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import org.junit.Test;
 
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 
-import static org.junit.Assert.*;
-import static org.mockito.BDDMockito.*;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 /**
  * Unit tests for {@link CustomScopeConfigurer}.
@@ -95,7 +95,7 @@ public class CustomScopeConfigurerTests {
 		figurer.postProcessBeanFactory(factory);
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test(expected = ClassCastException.class)
 	public void testWhereScopeMapHasNonStringTypedScopeNameInKeySet() {
 		Map scopes = new HashMap();

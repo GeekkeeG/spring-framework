@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2017 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,8 +36,11 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
 /**
  * @author Arjen Poutsma
@@ -52,7 +55,7 @@ public class RouterFunctionsTests {
 
 		MockServerRequest request = MockServerRequest.builder().build();
 		RequestPredicate requestPredicate = mock(RequestPredicate.class);
-		when(requestPredicate.test(request)).thenReturn(true);
+		given(requestPredicate.test(request)).willReturn(true);
 
 		RouterFunction<ServerResponse>
 				result = RouterFunctions.route(requestPredicate, handlerFunction);
@@ -72,7 +75,7 @@ public class RouterFunctionsTests {
 
 		MockServerRequest request = MockServerRequest.builder().build();
 		RequestPredicate requestPredicate = mock(RequestPredicate.class);
-		when(requestPredicate.test(request)).thenReturn(false);
+		given(requestPredicate.test(request)).willReturn(false);
 
 		RouterFunction<ServerResponse> result = RouterFunctions.route(requestPredicate, handlerFunction);
 		assertNotNull(result);
@@ -90,7 +93,7 @@ public class RouterFunctionsTests {
 
 		MockServerRequest request = MockServerRequest.builder().build();
 		RequestPredicate requestPredicate = mock(RequestPredicate.class);
-		when(requestPredicate.nest(request)).thenReturn(Optional.of(request));
+		given(requestPredicate.nest(request)).willReturn(Optional.of(request));
 
 		RouterFunction<ServerResponse> result = RouterFunctions.nest(requestPredicate, routerFunction);
 		assertNotNull(result);
@@ -109,7 +112,7 @@ public class RouterFunctionsTests {
 
 		MockServerRequest request = MockServerRequest.builder().build();
 		RequestPredicate requestPredicate = mock(RequestPredicate.class);
-		when(requestPredicate.nest(request)).thenReturn(Optional.empty());
+		given(requestPredicate.nest(request)).willReturn(Optional.empty());
 
 		RouterFunction<ServerResponse> result = RouterFunctions.nest(requestPredicate, routerFunction);
 		assertNotNull(result);

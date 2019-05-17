@@ -35,7 +35,9 @@ import org.springframework.mock.http.server.reactive.test.MockServerHttpRequest;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.springframework.core.ResolvableType.forClass;
 
 /**
@@ -79,9 +81,9 @@ public class DefaultMultipartMessageReaderTests extends AbstractDataBufferAlloca
 		Flux<Part> result = this.reader.read(forClass(Part.class), request, emptyMap());
 
 		StepVerifier.create(result)
-				.consumeNextWith(part -> {
-					part.content().subscribe(DataBufferUtils::release);
-				})
+				.consumeNextWith(part ->
+					part.content().subscribe(DataBufferUtils::release)
+				)
 				.verifyComplete();
 	}
 

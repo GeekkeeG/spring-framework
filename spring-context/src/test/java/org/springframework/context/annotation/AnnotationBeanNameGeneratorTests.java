@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2014 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Unit tests for {@link AnnotationBeanNameGenerator}.
@@ -107,12 +109,9 @@ public class AnnotationBeanNameGeneratorTests {
 		assertEquals("annotationBeanNameGeneratorTests.ComponentFromNonStringMeta", beanName);
 	}
 
-	/**
-	 * @since 4.0.1
-	 * @see https://jira.spring.io/browse/SPR-11360
-	 */
 	@Test
 	public void generateBeanNameFromComposedControllerAnnotationWithoutName() {
+		// SPR-11360
 		BeanDefinitionRegistry registry = new SimpleBeanDefinitionRegistry();
 		AnnotatedBeanDefinition bd = new AnnotatedGenericBeanDefinition(ComposedControllerAnnotationWithoutName.class);
 		String beanName = this.beanNameGenerator.generateBeanName(bd, registry);
@@ -120,12 +119,9 @@ public class AnnotationBeanNameGeneratorTests {
 		assertEquals(expectedGeneratedBeanName, beanName);
 	}
 
-	/**
-	 * @since 4.0.1
-	 * @see https://jira.spring.io/browse/SPR-11360
-	 */
 	@Test
 	public void generateBeanNameFromComposedControllerAnnotationWithBlankName() {
+		// SPR-11360
 		BeanDefinitionRegistry registry = new SimpleBeanDefinitionRegistry();
 		AnnotatedBeanDefinition bd = new AnnotatedGenericBeanDefinition(ComposedControllerAnnotationWithBlankName.class);
 		String beanName = this.beanNameGenerator.generateBeanName(bd, registry);
@@ -133,12 +129,9 @@ public class AnnotationBeanNameGeneratorTests {
 		assertEquals(expectedGeneratedBeanName, beanName);
 	}
 
-	/**
-	 * @since 4.0.1
-	 * @see https://jira.spring.io/browse/SPR-11360
-	 */
 	@Test
 	public void generateBeanNameFromComposedControllerAnnotationWithStringValue() {
+		// SPR-11360
 		BeanDefinitionRegistry registry = new SimpleBeanDefinitionRegistry();
 		AnnotatedBeanDefinition bd = new AnnotatedGenericBeanDefinition(
 			ComposedControllerAnnotationWithStringValue.class);

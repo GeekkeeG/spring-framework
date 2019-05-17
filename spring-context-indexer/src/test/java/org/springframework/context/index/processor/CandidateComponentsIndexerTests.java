@@ -36,6 +36,7 @@ import org.springframework.context.index.sample.AbstractController;
 import org.springframework.context.index.sample.MetaControllerIndexed;
 import org.springframework.context.index.sample.SampleComponent;
 import org.springframework.context.index.sample.SampleController;
+import org.springframework.context.index.sample.SampleEmbedded;
 import org.springframework.context.index.sample.SampleMetaController;
 import org.springframework.context.index.sample.SampleMetaIndexedController;
 import org.springframework.context.index.sample.SampleNonStaticEmbedded;
@@ -47,7 +48,6 @@ import org.springframework.context.index.sample.cdi.SampleNamed;
 import org.springframework.context.index.sample.cdi.SampleTransactional;
 import org.springframework.context.index.sample.jpa.SampleConverter;
 import org.springframework.context.index.sample.jpa.SampleEmbeddable;
-import org.springframework.context.index.sample.SampleEmbedded;
 import org.springframework.context.index.sample.jpa.SampleEntity;
 import org.springframework.context.index.sample.jpa.SampleMappedSuperClass;
 import org.springframework.context.index.sample.type.Repo;
@@ -61,8 +61,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ClassUtils;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.springframework.context.index.processor.Metadata.*;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.sameInstance;
+import static org.springframework.context.index.processor.Metadata.hasComponent;
 
 /**
  * Tests for {@link CandidateComponentsIndexer}.

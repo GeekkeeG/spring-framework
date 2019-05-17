@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2018 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,9 @@ import org.springframework.tests.sample.beans.GenericIntegerBean;
 import org.springframework.tests.sample.beans.GenericSetOfIntegerBean;
 import org.springframework.tests.sample.beans.TestBean;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Juergen Hoeller
@@ -158,7 +160,7 @@ public class BeanWrapperGenericsTests {
 		GenericBean<?> gb = new GenericBean<>();
 		BeanWrapper bw = new BeanWrapperImpl(gb);
 		bw.registerCustomEditor(Number.class, new CustomNumberEditor(Integer.class, false));
-		Map<String, Collection> input = new HashMap<>();
+		Map<String, Collection<?>> input = new HashMap<>();
 		HashSet<Integer> value1 = new HashSet<>();
 		value1.add(new Integer(1));
 		input.put("1", value1);
@@ -505,6 +507,7 @@ public class BeanWrapperGenericsTests {
 			public Holder(D data) {
 				this.data = data;
 			}
+			@SuppressWarnings("unused")
 			public D getData() {
 				return this.data;
 			}

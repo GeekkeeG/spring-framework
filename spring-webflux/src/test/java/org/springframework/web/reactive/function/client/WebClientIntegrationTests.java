@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2018 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,10 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.http.codec.Pojo;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Integration tests using an {@link ExchangeFunction} through {@link WebClient}.
@@ -730,9 +733,9 @@ public class WebClientIntegrationTests {
 				.exchange()
 				.flatMap(response -> response.toEntity(Void.class));
 
-		StepVerifier.create(result).assertNext(r -> {
-			assertTrue(r.getStatusCode().is2xxSuccessful());
-		}).verifyComplete();
+		StepVerifier.create(result).assertNext(r ->
+			assertTrue(r.getStatusCode().is2xxSuccessful())
+		).verifyComplete();
 	}
 
 	@Test  // SPR-15782

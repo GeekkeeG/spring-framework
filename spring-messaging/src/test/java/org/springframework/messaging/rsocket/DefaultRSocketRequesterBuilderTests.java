@@ -28,8 +28,12 @@ import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 /**
  * Unit tests for {@link DefaultRSocketRequesterBuilder}.
@@ -44,7 +48,7 @@ public class DefaultRSocketRequesterBuilderTests {
 	@Before
 	public void setup() {
 		this.transport = mock(ClientTransport.class);
-		when(this.transport.connect(anyInt())).thenReturn(Mono.just(new MockConnection()));
+		given(this.transport.connect(anyInt())).willReturn(Mono.just(new MockConnection()));
 	}
 
 

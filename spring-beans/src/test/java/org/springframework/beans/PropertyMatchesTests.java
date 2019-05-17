@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2015 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,10 @@ package org.springframework.beans;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.emptyArray;
+import static org.hamcrest.Matchers.hasItemInArray;
+import static org.hamcrest.Matchers.not;
 
 /**
  * Tests for {@link PropertyMatches}.
@@ -121,6 +124,7 @@ public class PropertyMatchesTests {
 	}
 
 
+	@SuppressWarnings("unused")
 	private static class SampleBeanProperties {
 
 		private String name;
@@ -175,6 +179,7 @@ public class PropertyMatchesTests {
 	}
 
 
+	@SuppressWarnings("unused")
 	private static class SampleFieldProperties {
 
 		private String name;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2018 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,10 +44,7 @@ import javax.security.auth.Subject;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.ArgumentMatchers;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
@@ -102,10 +99,25 @@ import org.springframework.util.SerializationTestUtils;
 import org.springframework.util.StopWatch;
 import org.springframework.util.StringValueResolver;
 
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.*;
-import static org.mockito.BDDMockito.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 /**
  * Tests properties population and autowire behavior.
@@ -121,11 +133,6 @@ import static org.mockito.BDDMockito.*;
 public class DefaultListableBeanFactoryTests {
 
 	private static final Log factoryLog = LogFactory.getLog(DefaultListableBeanFactory.class);
-
-
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
-
 
 	@Test
 	public void testUnreferencedSingletonWasInstantiated() {
@@ -1230,8 +1237,8 @@ public class DefaultListableBeanFactoryTests {
 	public void testExpressionInStringArray() {
 		DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
 		BeanExpressionResolver beanExpressionResolver = mock(BeanExpressionResolver.class);
-		when(beanExpressionResolver.evaluate(eq("#{foo}"), ArgumentMatchers.any(BeanExpressionContext.class)))
-				.thenReturn("classpath:/org/springframework/beans/factory/xml/util.properties");
+		given(beanExpressionResolver.evaluate(eq("#{foo}"), any(BeanExpressionContext.class)))
+				.willReturn("classpath:/org/springframework/beans/factory/xml/util.properties");
 		bf.setBeanExpressionResolver(beanExpressionResolver);
 
 		RootBeanDefinition rbd = new RootBeanDefinition(PropertiesFactoryBean.class);
@@ -1457,6 +1464,7 @@ public class DefaultListableBeanFactoryTests {
 	}
 
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void testGetFactoryBeanByTypeWithPrimary() {
 		DefaultListableBeanFactory lbf = new DefaultListableBeanFactory();
 		RootBeanDefinition bd1 = new RootBeanDefinition(NullTestBeanFactoryBean.class);
@@ -1483,9 +1491,9 @@ public class DefaultListableBeanFactoryTests {
 		bd2.setPrimary(true);
 		lbf.registerBeanDefinition("bd1", bd1);
 		lbf.registerBeanDefinition("bd2", bd2);
-		thrown.expect(NoUniqueBeanDefinitionException.class);
-		thrown.expectMessage(containsString("more than one 'primary'"));
-		lbf.getBean(TestBean.class);
+		assertThatExceptionOfType(NoUniqueBeanDefinitionException.class).isThrownBy(() ->
+				lbf.getBean(TestBean.class))
+			.withMessageContaining("more than one 'primary'");
 	}
 
 	@Test
@@ -1528,10 +1536,10 @@ public class DefaultListableBeanFactoryTests {
 		RootBeanDefinition bd2 = new RootBeanDefinition(HighPriorityTestBean.class);
 		lbf.registerBeanDefinition("bd1", bd1);
 		lbf.registerBeanDefinition("bd2", bd2);
-		thrown.expect(NoUniqueBeanDefinitionException.class);
-		thrown.expectMessage(containsString("Multiple beans found with the same priority"));
-		thrown.expectMessage(containsString("5"));  // conflicting priority
-		lbf.getBean(TestBean.class);
+		assertThatExceptionOfType(NoUniqueBeanDefinitionException.class).isThrownBy(() ->
+				lbf.getBean(TestBean.class))
+			.withMessageContaining("Multiple beans found with the same priority")
+			.withMessageContaining("5"); // conflicting priority
 	}
 
 	@Test
@@ -1778,9 +1786,9 @@ public class DefaultListableBeanFactoryTests {
 		lbf.registerBeanDefinition("bd1", bd1);
 		lbf.registerBeanDefinition("bd2", bd2);
 
-		thrown.expect(NoUniqueBeanDefinitionException.class);
-		thrown.expectMessage(containsString("more than one 'primary'"));
-		lbf.getBean(ConstructorDependency.class, 42);
+		assertThatExceptionOfType(NoUniqueBeanDefinitionException.class).isThrownBy(() ->
+				lbf.getBean(ConstructorDependency.class, 42))
+			.withMessageContaining("more than one 'primary'");
 	}
 
 	@Test
@@ -1807,6 +1815,7 @@ public class DefaultListableBeanFactoryTests {
 	}
 
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void testBeanProviderSerialization() throws Exception {
 		DefaultListableBeanFactory lbf = new DefaultListableBeanFactory();
 		lbf.setSerializationId("test");
@@ -2667,10 +2676,6 @@ public class DefaultListableBeanFactoryTests {
 			public Object postProcessBeforeInitialization(Object bean, String beanName) {
 				return new TestBean();
 			}
-			@Override
-			public Object postProcessAfterInitialization(Object bean, String beanName) {
-				return bean;
-			}
 		});
 		BeanWithDisposableBean.closed = false;
 		lbf.preInstantiateSingletons();
@@ -2687,10 +2692,6 @@ public class DefaultListableBeanFactoryTests {
 			@Override
 			public Object postProcessBeforeInitialization(Object bean, String beanName) {
 				return new TestBean();
-			}
-			@Override
-			public Object postProcessAfterInitialization(Object bean, String beanName) {
-				return bean;
 			}
 		});
 		BeanWithDisposableBean.closed = false;
@@ -2709,10 +2710,6 @@ public class DefaultListableBeanFactoryTests {
 			@Override
 			public Object postProcessBeforeInitialization(Object bean, String beanName) {
 				return new TestBean();
-			}
-			@Override
-			public Object postProcessAfterInitialization(Object bean, String beanName) {
-				return bean;
 			}
 		});
 		BeanWithDestroyMethod.closeCount = 0;
@@ -2936,7 +2933,7 @@ public class DefaultListableBeanFactoryTests {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void testInitSecurityAwarePrototypeBean() {
 		final DefaultListableBeanFactory lbf = new DefaultListableBeanFactory();
 		RootBeanDefinition bd = new RootBeanDefinition(TestSecuredBean.class);
@@ -3195,6 +3192,7 @@ public class DefaultListableBeanFactoryTests {
 
 		private static int closeCount = 0;
 
+		@SuppressWarnings("unused")
 		private BeanWithDestroyMethod inner;
 
 		public void setInner(BeanWithDestroyMethod inner) {
@@ -3409,7 +3407,7 @@ public class DefaultListableBeanFactoryTests {
 		}
 
 		@Override
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings({ "unchecked", "rawtypes" })
 		public Object convertIfNecessary(Object value, @Nullable Class requiredType) {
 			if (value instanceof String && Float.class.isAssignableFrom(requiredType)) {
 				try {
@@ -3428,13 +3426,13 @@ public class DefaultListableBeanFactoryTests {
 		}
 
 		@Override
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings({ "unchecked", "rawtypes" })
 		public Object convertIfNecessary(Object value, @Nullable Class requiredType, @Nullable MethodParameter methodParam) {
 			return convertIfNecessary(value, requiredType);
 		}
 
 		@Override
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings({ "unchecked", "rawtypes" })
 		public Object convertIfNecessary(Object value, @Nullable Class requiredType, @Nullable Field field) {
 			return convertIfNecessary(value, requiredType);
 		}
@@ -3557,6 +3555,7 @@ public class DefaultListableBeanFactoryTests {
 
 		public TestBean testBean;
 
+		@SuppressWarnings("unused")
 		public TestBeanRecipient(TestBean testBean) {
 			this.testBean = testBean;
 		}

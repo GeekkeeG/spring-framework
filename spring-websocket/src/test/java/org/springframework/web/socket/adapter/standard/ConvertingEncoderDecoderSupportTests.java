@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,7 @@ import javax.websocket.Encoder;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -40,8 +38,11 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.socket.ContextLoaderTestUtils;
 
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 
 /**
  * Test for {@link org.springframework.web.socket.adapter.standard.ConvertingEncoderDecoderSupport}.
@@ -54,9 +55,6 @@ public class ConvertingEncoderDecoderSupportTests {
 
 	private static final ByteBuffer CONVERTED_BYTES = ByteBuffer.wrap("~test".getBytes());
 
-
-	@Rule
-	public ExpectedException thown = ExpectedException.none();
 
 	private WebApplicationContext applicationContext;
 
@@ -89,9 +87,9 @@ public class ConvertingEncoderDecoderSupportTests {
 	@Test
 	public void encodeToTextCannotConvert() throws Exception {
 		setup(NoConvertersConfig.class);
-		thown.expect(EncodeException.class);
-		thown.expectCause(isA(ConverterNotFoundException.class));
-		new MyTextEncoder().encode(myType);
+		assertThatExceptionOfType(EncodeException.class).isThrownBy(() ->
+				new MyTextEncoder().encode(myType))
+			.withCauseInstanceOf(ConverterNotFoundException.class);
 	}
 
 	@Test
@@ -103,9 +101,9 @@ public class ConvertingEncoderDecoderSupportTests {
 	@Test
 	public void encodeToBinaryCannotConvert() throws Exception {
 		setup(NoConvertersConfig.class);
-		thown.expect(EncodeException.class);
-		thown.expectCause(isA(ConverterNotFoundException.class));
-		new MyBinaryEncoder().encode(myType);
+		assertThatExceptionOfType(EncodeException.class).isThrownBy(() ->
+				new MyBinaryEncoder().encode(myType))
+			.withCauseInstanceOf(ConverterNotFoundException.class);
 	}
 
 	@Test
@@ -120,9 +118,9 @@ public class ConvertingEncoderDecoderSupportTests {
 		setup(NoConvertersConfig.class);
 		Decoder.Text<MyType> decoder = new MyTextDecoder();
 		assertThat(decoder.willDecode(CONVERTED_TEXT), is(false));
-		thown.expect(DecodeException.class);
-		thown.expectCause(isA(ConverterNotFoundException.class));
-		decoder.decode(CONVERTED_TEXT);
+		assertThatExceptionOfType(DecodeException.class).isThrownBy(() ->
+				decoder.decode(CONVERTED_TEXT))
+			.withCauseInstanceOf(ConverterNotFoundException.class);
 	}
 
 	@Test
@@ -137,9 +135,9 @@ public class ConvertingEncoderDecoderSupportTests {
 		setup(NoConvertersConfig.class);
 		Decoder.Binary<MyType> decoder = new MyBinaryDecoder();
 		assertThat(decoder.willDecode(CONVERTED_BYTES), is(false));
-		thown.expect(DecodeException.class);
-		thown.expectCause(isA(ConverterNotFoundException.class));
-		decoder.decode(CONVERTED_BYTES);
+		assertThatExceptionOfType(DecodeException.class).isThrownBy(() ->
+				decoder.decode(CONVERTED_BYTES))
+			.withCauseInstanceOf(ConverterNotFoundException.class);
 	}
 
 	@Test
@@ -168,9 +166,9 @@ public class ConvertingEncoderDecoderSupportTests {
 		ContextLoaderTestUtils.setCurrentWebApplicationContext(null);
 		WithAutowire encoder = new WithAutowire();
 		encoder.init(null);
-		thown.expect(IllegalStateException.class);
-		thown.expectMessage("Unable to locate the Spring ApplicationContext");
-		encoder.encode(myType);
+		assertThatIllegalStateException().isThrownBy(() ->
+				encoder.encode(myType))
+			.withMessageContaining("Unable to locate the Spring ApplicationContext");
 	}
 
 	@Test
@@ -178,9 +176,9 @@ public class ConvertingEncoderDecoderSupportTests {
 		setup(NoConfig.class);
 		MyBinaryEncoder encoder = new MyBinaryEncoder();
 		encoder.init(null);
-		thown.expect(IllegalStateException.class);
-		thown.expectMessage("Unable to find ConversionService");
-		encoder.encode(myType);
+		assertThatIllegalStateException().isThrownBy(() ->
+				encoder.encode(myType))
+			.withMessageContaining("Unable to find ConversionService");
 	}
 
 	@Configuration

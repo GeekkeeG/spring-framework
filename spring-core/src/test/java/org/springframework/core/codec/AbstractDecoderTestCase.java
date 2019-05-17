@@ -33,7 +33,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 /**
  * Abstract base class for {@link Decoder} unit tests. Subclasses need to implement
@@ -303,7 +303,7 @@ public abstract class AbstractDecoderTestCase<D extends Decoder<?>>
 	}
 
 	/**
-	 * Test a standard {@link Decoder#decodeToMono) decode} scenario. For example:
+	 * Test a standard {@link Decoder#decodeToMono decode} scenario. For example:
 	 * <pre class="code">
 	 * byte[] bytes1 = ...
 	 * byte[] bytes2 = ...
@@ -330,7 +330,7 @@ public abstract class AbstractDecoderTestCase<D extends Decoder<?>>
 	}
 
 	/**
-	 * Test a standard {@link Decoder#decodeToMono) decode} scenario. For example:
+	 * Test a standard {@link Decoder#decodeToMono decode} scenario. For example:
 	 * <pre class="code">
 	 * byte[] bytes1 = ...
 	 * byte[] bytes2 = ...

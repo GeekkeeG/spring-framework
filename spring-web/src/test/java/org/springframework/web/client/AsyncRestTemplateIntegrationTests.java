@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2017 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import org.springframework.core.io.ClassPathResource;
@@ -39,16 +38,20 @@ import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.AsyncClientHttpRequestExecution;
-import org.springframework.http.client.AsyncClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.http.client.HttpComponentsAsyncClientHttpRequestFactory;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Arjen Poutsma
@@ -58,7 +61,7 @@ import static org.junit.Assert.*;
 public class AsyncRestTemplateIntegrationTests extends AbstractMockWebServerTestCase {
 
 	private final AsyncRestTemplate template = new AsyncRestTemplate(
-			new HttpComponentsAsyncClientHttpRequestFactory());
+			new org.springframework.http.client.HttpComponentsAsyncClientHttpRequestFactory());
 
 
 	@Test
@@ -112,7 +115,7 @@ public class AsyncRestTemplateIntegrationTests extends AbstractMockWebServerTest
 	public void getEntityCallbackWithLambdas() throws Exception {
 		ListenableFuture<ResponseEntity<String>> futureEntity =
 				template.getForEntity(baseUrl + "/{method}", String.class, "get");
-		futureEntity.addCallback((entity) -> {
+		futureEntity.addCallback(entity -> {
 			assertEquals("Invalid content", helloWorld, entity.getBody());
 			assertFalse("No headers", entity.getHeaders().isEmpty());
 			assertEquals("Invalid content-type", textContentType, entity.getHeaders().getContentType());
@@ -311,7 +314,7 @@ public class AsyncRestTemplateIntegrationTests extends AbstractMockWebServerTest
 	@Test
 	public void deleteCallbackWithLambdas() throws Exception  {
 		ListenableFuture<?> deletedFuture = template.delete(new URI(baseUrl + "/delete"));
-		deletedFuture.addCallback(Assert::assertNull, ex -> fail(ex.getMessage()));
+		deletedFuture.addCallback(result -> assertNull(result), ex -> fail(ex.getMessage()));
 		waitTillDone(deletedFuture);
 	}
 
@@ -620,11 +623,17 @@ public class AsyncRestTemplateIntegrationTests extends AbstractMockWebServerTest
 
 	private void waitTillDone(ListenableFuture<?> future) {
 		while (!future.isDone()) {
+			try {
+				Thread.sleep(5);
+			}
+			catch (InterruptedException ex) {
+				Thread.currentThread().interrupt();
+			}
 		}
 	}
 
 
-	private static class RequestInterceptor implements AsyncClientHttpRequestInterceptor {
+	private static class RequestInterceptor implements org.springframework.http.client.AsyncClientHttpRequestInterceptor {
 
 		private final CountDownLatch latch = new CountDownLatch(1);
 
@@ -634,7 +643,7 @@ public class AsyncRestTemplateIntegrationTests extends AbstractMockWebServerTest
 
 		@Override
 		public ListenableFuture<ClientHttpResponse> intercept(HttpRequest request, byte[] body,
-				AsyncClientHttpRequestExecution execution) throws IOException {
+				org.springframework.http.client.AsyncClientHttpRequestExecution execution) throws IOException {
 
 			ListenableFuture<ClientHttpResponse> future = execution.executeAsync(request, body);
 			future.addCallback(
@@ -649,4 +658,5 @@ public class AsyncRestTemplateIntegrationTests extends AbstractMockWebServerTest
 			return future;
 		}
 	}
+
 }

@@ -46,13 +46,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.support.StaticWebApplicationContext;
-import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.method.HandlerTypePredicate;
 import org.springframework.web.servlet.mvc.condition.ConsumesRequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 /**
  * Tests for {@link RequestMappingHandlerMapping}.
@@ -223,7 +226,7 @@ public class RequestMappingHandlerMappingTests {
 			RequestMethod requestMethod) throws Exception {
 
 		Class<?> clazz = ComposedAnnotationController.class;
-		Method method = ClassUtils.getMethod(clazz, methodName, null);
+		Method method = ClassUtils.getMethod(clazz, methodName, (Class<?>[]) null);
 		RequestMappingInfo info = this.handlerMapping.getMappingForMethod(method, clazz);
 
 		assertNotNull(info);

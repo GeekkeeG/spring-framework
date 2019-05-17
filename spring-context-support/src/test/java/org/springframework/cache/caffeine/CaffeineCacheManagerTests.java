@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2016 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,18 @@ package org.springframework.cache.caffeine;
 import com.github.benmanes.caffeine.cache.CacheLoader;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.CaffeineSpec;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 /**
  * @author Ben Manes
@@ -35,9 +38,6 @@ import static org.mockito.Mockito.*;
  * @author Stephane Nicoll
  */
 public class CaffeineCacheManagerTests {
-
-	@Rule
-	public final ExpectedException thrown = ExpectedException.none();
 
 	@Test
 	public void testDynamicMode() {
@@ -187,9 +187,9 @@ public class CaffeineCacheManagerTests {
 		assertNotNull(value);
 		assertEquals("pong", value.get());
 
-		thrown.expect(IllegalArgumentException.class);
-		thrown.expectMessage("I only know ping");
-		assertNull(cache1.get("foo"));
+		assertThatIllegalArgumentException().isThrownBy(() ->
+				assertNull(cache1.get("foo")))
+			.withMessageContaining("I only know ping");
 	}
 
 	@SuppressWarnings("unchecked")

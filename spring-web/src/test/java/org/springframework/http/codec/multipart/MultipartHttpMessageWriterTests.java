@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2018 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,13 @@
 package org.springframework.http.codec.multipart;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Before;
 import org.junit.Test;
-import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.UnicastProcessor;
@@ -45,7 +44,12 @@ import org.springframework.mock.http.server.reactive.test.MockServerHttpRequest;
 import org.springframework.mock.http.server.reactive.test.MockServerHttpResponse;
 import org.springframework.util.MultiValueMap;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
 /**
  * @author Sebastien Deleuze
@@ -56,13 +60,7 @@ public class MultipartHttpMessageWriterTests extends AbstractLeakCheckingTestCas
 	private final MultipartHttpMessageWriter writer =
 			new MultipartHttpMessageWriter(ClientCodecConfigurer.create().getWriters());
 
-	private MockServerHttpResponse response;
-
-
-	@Before
-	public void setUp() {
-		this.response = new MockServerHttpResponse(this.bufferFactory);
-	}
+	private final MockServerHttpResponse response = new MockServerHttpResponse(this.bufferFactory);
 
 
 	@Test
@@ -84,7 +82,6 @@ public class MultipartHttpMessageWriterTests extends AbstractLeakCheckingTestCas
 
 	@Test
 	public void writeMultipart() throws Exception {
-
 		Resource logo = new ClassPathResource("/org/springframework/http/converter/logo.jpg");
 		Resource utf8 = new ClassPathResource("/org/springframework/http/converter/logo.jpg") {
 			@Override
@@ -94,7 +91,13 @@ public class MultipartHttpMessageWriterTests extends AbstractLeakCheckingTestCas
 			}
 		};
 
-		Publisher<String> publisher = Flux.just("foo", "bar", "baz");
+		Flux<DataBuffer> bufferPublisher = Flux.just(
+				this.bufferFactory.wrap("Aa".getBytes(StandardCharsets.UTF_8)),
+				this.bufferFactory.wrap("Bb".getBytes(StandardCharsets.UTF_8)),
+				this.bufferFactory.wrap("Cc".getBytes(StandardCharsets.UTF_8))
+		);
+		Part mockPart = mock(Part.class);
+		given(mockPart.content()).willReturn(bufferPublisher);
 
 		MultipartBodyBuilder bodyBuilder = new MultipartBodyBuilder();
 		bodyBuilder.part("name 1", "value 1");
@@ -103,14 +106,15 @@ public class MultipartHttpMessageWriterTests extends AbstractLeakCheckingTestCas
 		bodyBuilder.part("logo", logo);
 		bodyBuilder.part("utf8", utf8);
 		bodyBuilder.part("json", new Foo("bar"), MediaType.APPLICATION_JSON);
-		bodyBuilder.asyncPart("publisher", publisher, String.class);
+		bodyBuilder.asyncPart("publisher", Flux.just("foo", "bar", "baz"), String.class);
+		bodyBuilder.asyncPart("partPublisher", Mono.just(mockPart), Part.class);
 		Mono<MultiValueMap<String, HttpEntity<?>>> result = Mono.just(bodyBuilder.build());
 
 		Map<String, Object> hints = Collections.emptyMap();
 		this.writer.write(result, null, MediaType.MULTIPART_FORM_DATA, this.response, hints).block(Duration.ofSeconds(5));
 
 		MultiValueMap<String, Part> requestParts = parse(hints);
-		assertEquals(6, requestParts.size());
+		assertEquals(7, requestParts.size());
 
 		Part part = requestParts.getFirst("name 1");
 		assertTrue(part instanceof FormFieldPart);
@@ -145,24 +149,28 @@ public class MultipartHttpMessageWriterTests extends AbstractLeakCheckingTestCas
 		part = requestParts.getFirst("json");
 		assertEquals("json", part.name());
 		assertEquals(MediaType.APPLICATION_JSON, part.headers().getContentType());
-
-		String value = StringDecoder.textPlainOnly(false).decodeToMono(part.content(),
-				ResolvableType.forClass(String.class), MediaType.TEXT_PLAIN,
-				Collections.emptyMap()).block(Duration.ZERO);
-
+		String value = decodeToString(part);
 		assertEquals("{\"bar\":\"bar\"}", value);
 
 		part = requestParts.getFirst("publisher");
 		assertEquals("publisher", part.name());
-
-		value = StringDecoder.textPlainOnly(false).decodeToMono(part.content(),
-				ResolvableType.forClass(String.class), MediaType.TEXT_PLAIN,
-				Collections.emptyMap()).block(Duration.ZERO);
-
+		value = decodeToString(part);
 		assertEquals("foobarbaz", value);
+
+		part = requestParts.getFirst("partPublisher");
+		assertEquals("partPublisher", part.name());
+		value = decodeToString(part);
+		assertEquals("AaBbCc", value);
 	}
 
-	@Test // SPR-16402
+	@SuppressWarnings("ConstantConditions")
+	private String decodeToString(Part part) {
+		return StringDecoder.textPlainOnly().decodeToMono(part.content(),
+					ResolvableType.forClass(String.class), MediaType.TEXT_PLAIN,
+					Collections.emptyMap()).block(Duration.ZERO);
+	}
+
+	@Test  // SPR-16402
 	public void singleSubscriberWithResource() throws IOException {
 		UnicastProcessor<Resource> processor = UnicastProcessor.create();
 		Resource logo = new ClassPathResource("/org/springframework/http/converter/logo.jpg");
@@ -204,7 +212,7 @@ public class MultipartHttpMessageWriterTests extends AbstractLeakCheckingTestCas
 		this.response.getBodyAsString().block(Duration.ofSeconds(5));
 	}
 
-	@Test // SPR-16376
+	@Test  // SPR-16376
 	public void customContentDisposition() throws IOException {
 		Resource logo = new ClassPathResource("/org/springframework/http/converter/logo.jpg");
 		Flux<DataBuffer> buffers = DataBufferUtils.read(logo, new DefaultDataBufferFactory(), 1024);
@@ -263,7 +271,8 @@ public class MultipartHttpMessageWriterTests extends AbstractLeakCheckingTestCas
 	}
 
 
-	private class Foo {
+	@SuppressWarnings("unused")
+	private static class Foo {
 
 		private String bar;
 

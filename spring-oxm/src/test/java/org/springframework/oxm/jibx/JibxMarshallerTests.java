@@ -19,13 +19,15 @@ package org.springframework.oxm.jibx;
 import java.io.StringWriter;
 import javax.xml.transform.stream.StreamResult;
 
-import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.springframework.oxm.AbstractMarshallerTests;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 import static org.xmlunit.matchers.CompareMatcher.isSimilarTo;
 
 /**
@@ -41,7 +43,7 @@ public class JibxMarshallerTests extends AbstractMarshallerTests<JibxMarshaller>
 	@BeforeClass
 	public static void compilerAssumptions() {
 		// JiBX compiler is currently not compatible with JDK 9
-		Assume.assumeTrue(System.getProperty("java.version").startsWith("1.8."));
+		assumeTrue(System.getProperty("java.version").startsWith("1.8."));
 	}
 
 

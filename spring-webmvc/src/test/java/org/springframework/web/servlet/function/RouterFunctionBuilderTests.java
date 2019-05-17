@@ -28,10 +28,15 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.test.MockHttpServletRequest;
 
 import static java.util.Collections.emptyList;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.springframework.web.servlet.function.RequestPredicates.HEAD;
 
 /**
+ * Unit tests for {@link RouterFunctionBuilder}.
+ *
  * @author Arjen Poutsma
  */
 public class RouterFunctionBuilderTests {
@@ -180,7 +185,7 @@ public class RouterFunctionBuilderTests {
 		MockHttpServletRequest servletRequest = new MockHttpServletRequest("GET", "/foo");
 		ServerRequest fooRequest = new DefaultServerRequest(servletRequest, emptyList());
 
-		Optional<ServerResponse> fooResponse = route.route(fooRequest)
+		route.route(fooRequest)
 				.map(handlerFunction -> handle(handlerFunction, fooRequest));
 		assertEquals(4, filterCount.get());
 

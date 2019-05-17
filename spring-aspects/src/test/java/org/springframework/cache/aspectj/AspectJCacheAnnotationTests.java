@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2015 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package org.springframework.cache.aspectj;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import org.springframework.cache.Cache;
@@ -25,7 +24,9 @@ import org.springframework.cache.config.CacheableService;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 
 /**
  * @author Costin Leau
@@ -42,7 +43,7 @@ public class AspectJCacheAnnotationTests extends AbstractCacheAnnotationTests {
 	public void testKeyStrategy() throws Exception {
 		AnnotationCacheAspect aspect = ctx.getBean(
 				"org.springframework.cache.config.internalCacheAspect", AnnotationCacheAspect.class);
-		Assert.assertSame(ctx.getBean("keyGenerator"), aspect.getKeyGenerator());
+		assertSame(ctx.getBean("keyGenerator"), aspect.getKeyGenerator());
 	}
 
 	@Override

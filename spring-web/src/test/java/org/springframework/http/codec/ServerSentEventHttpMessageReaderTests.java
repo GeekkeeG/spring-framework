@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2018 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.mock.http.server.reactive.test.MockServerHttpRequest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Unit tests for {@link ServerSentEventHttpMessageReader}.
@@ -58,6 +61,7 @@ public class ServerSentEventHttpMessageReaderTests extends AbstractLeakCheckingT
 	}
 
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void readServerSentEvents() {
 		MockServerHttpRequest request = MockServerHttpRequest.post("/")
 				.body(Mono.just(stringBuffer(
@@ -88,6 +92,7 @@ public class ServerSentEventHttpMessageReaderTests extends AbstractLeakCheckingT
 	}
 
 	@Test
+	@SuppressWarnings("rawtypes")
 	public void readServerSentEventsWithMultipleChunks() {
 		MockServerHttpRequest request = MockServerHttpRequest.post("/")
 				.body(Flux.just(
@@ -195,6 +200,5 @@ public class ServerSentEventHttpMessageReaderTests extends AbstractLeakCheckingT
 		buffer.write(bytes);
 		return buffer;
 	}
-
 
 }

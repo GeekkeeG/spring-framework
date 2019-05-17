@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2018 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
@@ -35,12 +33,16 @@ import org.springframework.http.MockHttpInputMessage;
 import org.springframework.http.MockHttpOutputMessage;
 import org.springframework.util.FileCopyUtils;
 
-import static org.hamcrest.core.Is.*;
-import static org.hamcrest.core.IsInstanceOf.*;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.*;
-import static org.mockito.BDDMockito.any;
-import static org.mockito.BDDMockito.*;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
+import static org.mockito.Mockito.mock;
 
 /**
  * @author Arjen Poutsma
@@ -50,9 +52,6 @@ import static org.mockito.BDDMockito.*;
 public class ResourceHttpMessageConverterTests {
 
 	private final ResourceHttpMessageConverter converter = new ResourceHttpMessageConverter();
-
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
 
 
 	@Test
@@ -96,10 +95,10 @@ public class ResourceHttpMessageConverterTests {
 	public void shouldNotReadInputStreamResource() throws IOException {
 		ResourceHttpMessageConverter noStreamConverter = new ResourceHttpMessageConverter(false);
 		try (InputStream body = getClass().getResourceAsStream("logo.jpg") ) {
-			this.thrown.expect(HttpMessageNotReadableException.class);
 			MockHttpInputMessage inputMessage = new MockHttpInputMessage(body);
 			inputMessage.getHeaders().setContentType(MediaType.IMAGE_JPEG);
-			noStreamConverter.read(InputStreamResource.class, inputMessage);
+			assertThatExceptionOfType(HttpMessageNotReadableException.class).isThrownBy(() ->
+					noStreamConverter.read(InputStreamResource.class, inputMessage));
 		}
 	}
 
@@ -142,7 +141,7 @@ public class ResourceHttpMessageConverterTests {
 		InputStream inputStream = mock(InputStream.class);
 		given(resource.getInputStream()).willReturn(inputStream);
 		given(inputStream.read(any())).willReturn(-1);
-		doThrow(new NullPointerException()).when(inputStream).close();
+		willThrow(new NullPointerException()).given(inputStream).close();
 		converter.write(resource, MediaType.APPLICATION_OCTET_STREAM, outputMessage);
 
 		assertEquals(0, outputMessage.getHeaders().getContentLength());

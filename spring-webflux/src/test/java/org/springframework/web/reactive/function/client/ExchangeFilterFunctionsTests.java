@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2018 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.BodyExtractors;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
 /**
  * Unit tests for {@link ExchangeFilterFunctions}.
@@ -162,7 +165,7 @@ public class ExchangeFilterFunctionsTests {
 	public void statusHandlerMatch() {
 		ClientRequest request = ClientRequest.create(HttpMethod.GET, DEFAULT_URL).build();
 		ClientResponse response = mock(ClientResponse.class);
-		when(response.statusCode()).thenReturn(HttpStatus.NOT_FOUND);
+		given(response.statusCode()).willReturn(HttpStatus.NOT_FOUND);
 
 		ExchangeFunction exchange = r -> Mono.just(response);
 
@@ -180,7 +183,7 @@ public class ExchangeFilterFunctionsTests {
 	public void statusHandlerNoMatch() {
 		ClientRequest request = ClientRequest.create(HttpMethod.GET, DEFAULT_URL).build();
 		ClientResponse response = mock(ClientResponse.class);
-		when(response.statusCode()).thenReturn(HttpStatus.NOT_FOUND);
+		given(response.statusCode()).willReturn(HttpStatus.NOT_FOUND);
 
 		Mono<ClientResponse> result = ExchangeFilterFunctions
 				.statusError(HttpStatus::is5xxServerError, req -> new MyException())

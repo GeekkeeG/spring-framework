@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,13 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.core.NestedCheckedException;
 import org.springframework.core.NestedRuntimeException;
 
-import static org.junit.Assert.*;
-import static org.mockito.BDDMockito.*;
-import static org.springframework.beans.factory.support.BeanDefinitionBuilder.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.springframework.beans.factory.support.BeanDefinitionBuilder.genericBeanDefinition;
 
 /**
  * Unit tests for {@link ServiceLocatorFactoryBean}.
@@ -258,7 +262,7 @@ public class ServiceLocatorFactoryBeanTests {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void testWhenServiceLocatorExceptionClassIsNotAnExceptionSubclass() throws Exception {
 		ServiceLocatorFactoryBean factory = new ServiceLocatorFactoryBean();
 		factory.setServiceLocatorExceptionClass((Class) getClass());

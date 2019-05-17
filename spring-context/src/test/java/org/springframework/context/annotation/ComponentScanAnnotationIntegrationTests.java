@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2018 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import example.scannable_implicitbasepackage.ComponentScanAnnotatedConfigWithImp
 import example.scannable_implicitbasepackage.ConfigurableComponent;
 import example.scannable_scoped.CustomScopeAnnotationBean;
 import example.scannable_scoped.MyScope;
-
 import org.junit.Test;
 
 import org.springframework.aop.support.AopUtils;
@@ -62,10 +61,16 @@ import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.tests.context.SimpleMapScope;
 import org.springframework.util.SerializationTestUtils;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.*;
-import static org.springframework.beans.factory.support.BeanDefinitionBuilder.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.springframework.beans.factory.support.BeanDefinitionBuilder.genericBeanDefinition;
 
 /**
  * Integration tests for processing ComponentScan-annotated Configuration classes.
@@ -393,7 +398,9 @@ class ComponentScanWithCustomTypeFilter {
 	@SuppressWarnings({ "rawtypes", "serial", "unchecked" })
 	public static CustomAutowireConfigurer customAutowireConfigurer() {
 		CustomAutowireConfigurer cac = new CustomAutowireConfigurer();
-		cac.setCustomQualifierTypes(new HashSet() {{ add(ComponentScanParserTests.CustomAnnotation.class); }});
+		cac.setCustomQualifierTypes(new HashSet() {{
+				add(ComponentScanParserTests.CustomAnnotation.class);
+		}});
 		return cac;
 	}
 

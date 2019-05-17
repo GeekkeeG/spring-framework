@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2017 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +30,7 @@ import javax.jms.Topic;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import org.springframework.beans.factory.support.StaticListableBeanFactory;
 import org.springframework.jms.StubTextMessage;
@@ -47,16 +45,21 @@ import org.springframework.messaging.handler.annotation.support.DefaultMessageHa
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.util.ReflectionUtils;
 
-import static org.junit.Assert.*;
-import static org.mockito.BDDMockito.*;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 /**
  * @author Stephane Nicoll
  */
 public class MessagingMessageListenerAdapterTests {
-
-	@Rule
-	public final ExpectedException thrown = ExpectedException.none();
 
 	private static final Destination sharedReplyDestination = mock(Destination.class);
 
@@ -145,13 +148,14 @@ public class MessagingMessageListenerAdapterTests {
 	@Test
 	public void headerConversionLazilyInvoked() throws JMSException {
 		javax.jms.Message jmsMessage = mock(javax.jms.Message.class);
-		when(jmsMessage.getPropertyNames()).thenThrow(new IllegalArgumentException("Header failure"));
+		given(jmsMessage.getPropertyNames()).willThrow(new IllegalArgumentException("Header failure"));
 		MessagingMessageListenerAdapter listener = getSimpleInstance("simple", Message.class);
 		Message<?> message = listener.toMessagingMessage(jmsMessage);
 
-		this.thrown.expect(IllegalArgumentException.class);
-		this.thrown.expectMessage("Header failure");
-		message.getHeaders(); // Triggers headers resolution
+		// Triggers headers resolution
+		assertThatIllegalArgumentException().isThrownBy(
+				message::getHeaders)
+			.withMessageContaining("Header failure");
 	}
 
 	@Test
